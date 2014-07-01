@@ -90,6 +90,12 @@ module("test merge_weak")
 	auto d2 = neo::buffer_constraints{none, 10, 7, none};
 	auto d3 = merge_weak(d1, d2);
 	require(d3 == d1);
+
+	auto e1 = neo::buffer_constraints{10, 50, 5, none};
+	auto e2 = neo::buffer_constraints{60, 70, 7, none};
+	auto e3 = neo::buffer_constraints{10, 50, 35, none};
+	auto e4 = merge_weak(e1, e2);
+	require(e4 == e3);
 }
 
 suite("Tests the buffer_constraints class.")

@@ -1,0 +1,18 @@
+*.DS_Store
+*.dSYM
+*.dat
+*.gch
+*.out
+*.run
+*.swp
+*.vim
+data/*
+
+# The website directory contains the submodule for the Github Pages website. We
+# do not want to track the internal changes of the Git repository for the
+# website in this one, so we ignore the website directory. Maintaining the
+# website as a subdirectory instead of a directory at the same level as this one
+# makes editing files and linking to them from the README of the project
+# repository much easier.
+
+website/.git

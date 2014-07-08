@@ -35,9 +35,6 @@
 - Device:
     - Traits:
 	- mode
-        - char_type
-	- access_type
-	- pointer
 	- offset_type
     - Functions:
         - Constructor
@@ -47,29 +44,27 @@
 	    struct is platform-specific.
 	    - This struct includes the expected length of the file, for
 	    preallocation.
+	- `buffer allocate()`
+	    - The device must allocate the buffer, because special
+	    considerations aside from size and alignment may have to be made
+	    depending on how the IO is performed (e.g. `mmap`).
         - `buffer_constraints preferred_constraints()`
 	- `buffer_constraints required_constraints()`
 	- IO:
             - Non-seekable device:
-                - If input device: `expected<size_t> read(size_t cnt, buffer& buf);`
-                - If output device: `expected<size_t> write(size_t cnt, buffer& buf);`
+                - If input device: `expected<void> read(size_t n, const buffer& buf);`
+                - If output device: `expected<void> write(size_t n, const buffer& buf);`
             - Seekable device:
-                - If input device: `expected<size_t> read(offset_type off, size_t cnt, buffer& buf);`
-                - If output device: `expected<size_t> write(offset_type off, size_t cnt, buffer& buf);`
+                - If input device: `expected<void> read(offset_type off, size_t n, const buffer& buf);`
+                - If output device: `expected<void> write(offset_type off, size_t n, const buffer& buf);`
     - Examples:
-        - basic_file
-        - basic_gpu_buffer (?)
+        - file
+        - gpu_buffer (?)
 
 - Global IO functions:
     - `cc::expected<void> copy(Device1& src, Device2& dst)`
         - Make sure that the modes of the given devices are compatible, i.e. we
         must be able to read from `src` and write to `dst`.
-
-- `buffer`
-    - `char_type`
-    - Capacity
-    - Size
-    - Pointer to buffer (which implies alignment)
 
 - `buffer_constraints`
     - Minimum size
@@ -86,7 +81,7 @@
 	a hint that modifies `a`, without violating any of `a`'s existing
 	constraints (e.g. alignment, size multiple).
 
-- `io_status`
+- `operation_status`
     - `working`: The last element is still being processed.
     - `done` The last element was successfully processed, though there may have
     been warnings or log messages.
@@ -101,7 +96,7 @@
     - `warning`
     - `error`
 
-`io_state`
+`operation_state`
     - Responsible for maintaining IO state for serializers and deserializers.
     - Stores list of log messages, each associated with a severity.
     - `io_status status() const`: Returns the status of the last IO operation.
@@ -124,10 +119,10 @@
         - `buffer_constraints preferred_constraints()`
         - `buffer_constraints required_constraints()`
 	- Non-incremental deserializer:
-	    - `optional<value_type> deserialize(const pointer p, size_t n, io_state& is, buffer_state& bs)`
+	    - `optional<value_type> deserialize(const pointer p, size_t n, operation_state& is, buffer_state& bs)`
 		- Reads the next chunk
         - Incremental deserializer:
-            - `void deserialize_partial(const pointer p, size_t n, io_state& is, buffer_state& bs)`
+            - `void deserialize_partial(const pointer p, size_t n, operation_state& is, buffer_state& bs)`
 		- The class will **not** automatically begin deserializing the
 		next object using the extra characters.
 	    - `optional<value_type> get()`
@@ -144,13 +139,13 @@
         - `buffer_constraints preferred_constraints()`
         - `buffer_constraints required_constraints()`
         - Non-incremental deserializer:
-	    - `void serialize_copy(const T& t, const pointer p, size_t n, io_state& is, buffer_state& bs)`
+	    - `void serialize_copy(const T& t, const pointer p, size_t n, operation_state& is, buffer_state& bs)`
 	    - If direct serialization supported:
-	        - `optional<pointer> serialize_direct(const T& t, io_state& ic)`
+	        - `optional<pointer> serialize_direct(const T& t, operation_state& ic)`
 	- Incremental serializer:
-	    - `void serialize_copy_partial(const T& t, const pointer p, size_t n, io_state& is, buffer_state& bs)`
+	    - `void serialize_copy_partial(const T& t, const pointer p, size_t n, operation_state& is, buffer_state& bs)`
 	    - If direct serialization supported:
-	        - `optional<pointer> serialize_direct(const T& t, io_state& ic)`
+	        - `optional<pointer> serialize_direct(const T& t, operation_state& ic)`
 		- It does not make sense to support partial direct
 		serialization
 

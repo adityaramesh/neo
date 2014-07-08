@@ -46,7 +46,11 @@ struct to_posix;
 template <>
 struct to_posix<open_mode::read>
 {
-	static constexpr auto value = O_RDONLY;
+	#if PLATFORM_KERNEL == PLATFORM_KERNEL_LINUX
+		static constexpr auto value = O_RDONLY | O_NOATIME;
+	#elif PLATFORM_KERNEL == PLATFORM_KERNEL_XNU
+		static constexpr auto value = O_RDONLY;
+	#endif
 };
 
 template <>
@@ -56,13 +60,21 @@ struct to_posix<open_mode::replace>
 	** We use `O_RDWR` instead of `O_WRONLY`, because some functions such as
 	** `mmap` may require `O_RDWR`.
 	*/
-	static constexpr auto value = O_RDWR | O_CREAT | O_TRUNC;
+	#if PLATFORM_KERNEL == PLATFORM_KERNEL_LINUX
+		static constexpr auto value = O_RDWR | O_CREAT | O_TRUNC | O_NOATIME;
+	#elif PLATFORM_KERNEL == PLATFORM_KERNEL_XNU
+		static constexpr auto value = O_RDWR | O_CREAT | O_TRUNC;
+	#endif
 };
 
 template <>
 struct to_posix<open_mode::modify>
 {
-	static constexpr auto value = O_RDWR;
+	#if PLATFORM_KERNEL == PLATFORM_KERNEL_LINUX
+		static constexpr auto value = O_RDWR | O_NOATIME;
+	#elif PLATFORM_KERNEL == PLATFORM_KERNEL_XNU
+		static constexpr auto value = O_RDWR;
+	#endif
 };
 
 #endif

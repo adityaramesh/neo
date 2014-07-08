@@ -12,9 +12,9 @@ cost of using CRTP everywhere to force the relevant classes to obey the
 interface has no benefit.
 
 - Stage 1: low-level IO classes.
-    - Test `buffer_constraints.hpp`.
-    - Implement `buffer.hpp`, along with allocation routine in the same file.
     - Implement `file.hpp`.
+    - Make the `allocate` function for buffers accept the associated `Device` as
+    a parameter. This can accommodate for `mmap`, as well as GPU buffers.
 
 - Stage 2: serialization and deserialization classes.
     - Implement `io_status.hpp`.

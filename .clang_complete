@@ -1,0 +1,3 @@
+-I /opt/local/include
+-I /Users/aditya/projects/c++/ccbase/include
+-I /Users/aditya/projects/infancy/neo/include

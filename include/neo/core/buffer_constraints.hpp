@@ -198,6 +198,43 @@ std::ostream& operator<<(std::ostream& os, const buffer_constraints& bc)
 	return os;
 }
 
+std::ostream&
+print_as_list_item(std::ostream& os, const buffer_constraints& bc)
+{
+	os << "  * At least: ";
+	if (bc.at_least()) {
+		os << bc.at_least().get() << "\n";
+	}
+	else {
+		os << "none\n";
+	}
+
+	os << "  * At most: ";
+	if (bc.at_most()) {
+		os << bc.at_most().get() << "\n";
+	}
+	else {
+		os << "none\n";
+	}
+
+	os << "  * Multiple of: ";
+	if (bc.multiple_of()) {
+		os << bc.multiple_of().get() << "\n";
+	}
+	else {
+		os << "none\n";
+	}
+
+	os << "  * Align to: ";
+	if (bc.align_to()) {
+		os << bc.align_to().get() << "\n";
+	}
+	else {
+		os << "none\n";
+	}
+	return os;
+}
+
 /*
 ** Returns the minimum permissible size allowed by the given constraints.
 */

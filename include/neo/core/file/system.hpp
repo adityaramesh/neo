@@ -79,7 +79,13 @@ safe_stat(int fd)
 	return st;
 }
 
-cc::expected<ssize_t>
+cc::expected<bool>
+is_seekable(int fd)
+{
+	return ::lseek(fd, 0, SEEK_SET) == -1 && errno == ESPIPE;
+}
+
+cc::expected<void>
 full_read(int fd, uint8_t* buf, size_t count, off_t offset)
 {
 	auto c = size_t{0};
@@ -97,10 +103,10 @@ full_read(int fd, uint8_t* buf, size_t count, off_t offset)
 		}
 	}
 	while (c < count);
-	return c;
+	return true;
 }
 
-cc::expected<ssize_t>
+cc::expected<void>
 full_write(int fd, uint8_t* buf, size_t count, off_t offset)
 {
 	auto c = size_t{0};
@@ -118,7 +124,7 @@ full_write(int fd, uint8_t* buf, size_t count, off_t offset)
 		}
 	}
 	while (c < count);
-	return c;
+	return true;
 }
 
 cc::expected<void>

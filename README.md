@@ -18,14 +18,8 @@ cost of using CRTP everywhere to force the relevant classes to obey the
 interface has no tangible benefits.
 
 - Stage 1: low-level IO classes.
-
-    - Implement `satisfies` function for `buffer_constraints`; add checks in
-    `file::allocate_*` functions.
-    - Revise `file::buffer` so that it satisfies concept requirements.
-    - Implement `file::device`.
-        - Implement `required_constraints` and `preferred_constraints` with
-	`io_type` parameter.
-        - Implement `allocate_ibuffer`, `allocate_obuffer`, `allocate_iobuffer`.
+    - Implement `enable_if` for `alloacate` functions.
+    - Implement `read` and `write` methods for `file::seekable_file`.
 
 - Stage 2: serialization and deserialization classes.
     - Implement `io_status.hpp`.
@@ -33,7 +27,15 @@ interface has no tangible benefits.
     - Implement `severity.hpp`.
     - Implement `buffer_state.hpp`.
 
-- Stage 3: MNIST and tuple support.
+- Stage 3: CSV support with tuples.
+    - Implement `csv::header_reader.hpp`.
+    - Implement `csv::deserializer.hpp`.
+    - Test both of the above.
+    - Implement `csv::header_writer.hpp`.
+    - Implement `csv::serializer.hpp`.
+    - Test both of the above.
+
+- Stage 4: MNIST and tuple support.
     - Implement `mnist::header_reader.hpp`.
     - Implement `mnist::deserializer.hpp`.
     - Test both of the above.

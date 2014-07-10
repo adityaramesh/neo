@@ -6,7 +6,7 @@ ccbase    = ENV['CCBASE_INCLUDE_PATH']
 eigen     = ENV['EIGEN3_INCLUDE_PATH']
 mpl       = ENV['MPL_INCLUDE_PATH']
 langflags = "-std=c++11"
-wflags    = "-Wall -Wextra -pedantic -Wno-return-type-c-linkage"
+wflags    = "-Wall -Wextra -pedantic -Wno-switch -Wno-return-type-c-linkage"
 archflags = "-march=native"
 incflags  = "-I include -isystem #{boost} -isystem #{ccbase} -isystem #{eigen} -isystem #{mpl}"
 ldflags   = ""

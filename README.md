@@ -5,16 +5,27 @@
   ** Contact:   _@adityaramesh.com
 -->
 
+# Future Ideas
+
+- Use the DSA file format to implement boosting for data sets that cannot fit in
+RAM. One component of the tuple should be used to store the weight associated
+with each example.
+
 # TODO
 
 - Note about concepts: do not implement Device, Serializer, or Deserializer. The
 cost of using CRTP everywhere to force the relevant classes to obey the
-interface has no benefit.
+interface has no tangible benefits.
 
 - Stage 1: low-level IO classes.
-    - Implement `file.hpp`.
-    - Make the `allocate` function for buffers accept the associated `Device` as
-    a parameter. This can accommodate for `mmap`, as well as GPU buffers.
+
+    - Implement `satisfies` function for `buffer_constraints`; add checks in
+    `file::allocate_*` functions.
+    - Revise `file::buffer` so that it satisfies concept requirements.
+    - Implement `file::device`.
+        - Implement `required_constraints` and `preferred_constraints` with
+	`io_type` parameter.
+        - Implement `allocate_ibuffer`, `allocate_obuffer`, `allocate_iobuffer`.
 
 - Stage 2: serialization and deserialization classes.
     - Implement `io_status.hpp`.

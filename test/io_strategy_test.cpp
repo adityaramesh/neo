@@ -6,19 +6,22 @@
 */
 
 #include <ccbase/unit_test.hpp>
-#include <neo/core/io_common.hpp>
-#include <neo/core/io_strategy.hpp>
+#include <neo/core/file/io_strategy.hpp>
+#include <neo/core/file/system.hpp>
 
 module("tests default_io_strategy")
 {
-	using neo::open_mode::read;
+	namespace file = neo::file;
 	using neo::access_mode::sequential;
+	using file::open_mode::read;
 
 	constexpr auto path = "data/text/moby_dick.txt";
-	auto st = neo::default_io_strategy<read, sequential>(path);
-	auto fd = neo::open<read>(path, st).get();
-	neo::safe_close(fd).get();
-	cc::println(st);
+	auto st = file::safe_stat(path).get();
+	auto strat = file::io_strategy(st.st_size, boost::none, st.st_blksize)
+		.set_defaults<read, sequential>();
+	auto fd = file::open<read>(path, strat).get();
+	file::safe_close(fd).get();
+	cc::println(strat);
 }
 
 suite("Tests the io_strategy class.")

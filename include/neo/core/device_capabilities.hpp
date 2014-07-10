@@ -1,5 +1,5 @@
 /*
-** File Name: mode.hpp
+** File Name: device_capabilities.hpp
 ** Author:    Aditya Ramesh
 ** Date:      07/08/2014
 ** Contact:   _@adityaramesh.com
@@ -16,7 +16,7 @@
 
 namespace neo {
 
-enum class mode : unsigned
+enum class device_capabilities : unsigned
 {
 	input,
 	output,

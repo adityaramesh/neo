@@ -1,15 +1,18 @@
 /*
-** File Name: io_common.hpp
+** File Name: system.hpp
 ** Author:    Aditya Ramesh
 ** Date:      07/01/2014
 ** Contact:   _@adityaramesh.com
+**
+** This file contains wrappers over platform-specific functions related to file
+** IO.
 */
 
 #ifndef Z8935F853_2245_41F3_BAC1_D72ECE5A35FD
 #define Z8935F853_2245_41F3_BAC1_D72ECE5A35FD
 
-#include <system_error>
 #include <tuple>
+#include <system_error>
 #include <ccbase/error.hpp>
 
 #if PLATFORM_KERNEL == PLATFORM_KERNEL_LINUX || \
@@ -24,6 +27,7 @@
 #endif
 
 namespace neo {
+namespace file {
 
 using blksize_t = decltype(::stat::st_blksize);
 
@@ -216,6 +220,6 @@ safe_preallocate(int fd, size_t len)
 
 #endif
 
-}
+}}
 
 #endif

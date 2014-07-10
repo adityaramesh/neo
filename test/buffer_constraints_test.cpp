@@ -98,4 +98,24 @@ module("test merge_weak")
 	require(e4 == e3);
 }
 
+module("test satisfies")
+{
+	using boost::none;
+
+	auto a1 = neo::buffer_constraints{10, 40, none, none};
+	auto a2 = neo::buffer_constraints{20, 30, none, none};
+	require(!a1.satisfies(a2));
+	require(a2.satisfies(a1));
+
+	auto b1 = neo::buffer_constraints{10, 20, none, none};
+	auto b2 = neo::buffer_constraints{30, 40, none, none};
+	require(!b1.satisfies(b2));
+	require(!b2.satisfies(b1));
+
+	auto c1 = neo::buffer_constraints{none, none, 5, none};
+	auto c2 = neo::buffer_constraints{none, none, 10, none};
+	require(!c1.satisfies(c2));
+	require(c2.satisfies(c1));
+}
+
 suite("Tests the buffer_constraints class.")

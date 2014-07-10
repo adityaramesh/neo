@@ -39,6 +39,7 @@
 #include <ostream>
 #include <boost/optional.hpp>
 #include <boost/math/common_factor.hpp>
+#include <ccbase/format.hpp>
 
 namespace neo {
 
@@ -118,6 +119,12 @@ public:
 	decltype(m_multiple_of) multiple_of() const { return m_multiple_of; }
 	decltype(m_align_to)    align_to()    const { return m_align_to;    }
 
+	/*
+	** Returns whether this object's constraints are compatible with those
+	** of the given object.
+	*/
+	bool satisfies(const buffer_constraints&);
+
 	buffer_constraints& at_least(boost::optional<size_t> n)
 	{
 		m_at_least = n;
@@ -160,40 +167,78 @@ public:
 	}
 };
 
+bool buffer_constraints::satisfies(const buffer_constraints& bc)
+{
+	/*
+	** The first two checks are somewhat redundantly written if we can
+	** guarantee that both sets of constraints are feasible. But it is
+	** useful to keep the redundant checks, in case this assumption ends up
+	** being false.
+	*/
+	if (at_least()) {
+		if (bc.at_least() && at_least() < bc.at_least()) {
+			return false;
+		}
+		if (bc.at_most() && at_least() > bc.at_most()) {
+			return false;
+		}
+	}
+
+	if (at_most()) {
+		if (bc.at_most() && at_most() > bc.at_most()) {
+			return false;
+		}
+		if (bc.at_least() && at_most() < bc.at_least()) {
+			return false;
+		}
+	}
+
+	if (
+		multiple_of() && bc.multiple_of() &&
+		multiple_of().get() % bc.multiple_of().get() != 0
+	) {
+		return false;
+	}
+
+	if (
+		align_to() && bc.align_to() &&
+		align_to().get() % bc.align_to().get() != 0
+	) {
+		return false;
+	}
+	return true;
+}
+
 std::ostream& operator<<(std::ostream& os, const buffer_constraints& bc)
 {
-	os << "Buffer constraints:\n";
+	cc::writeln(os, "Buffer constraints:");
 
-	os << " * At least: ";
 	if (bc.at_least()) {
-		os << bc.at_least().get() << "\n";
+		cc::writeln(os, " * At least: $.", bc.at_least().get());
 	}
 	else {
-		os << "none\n";
+		cc::writeln(os, " * At least: not provided.");
 	}
 
-	os << " * At most: ";
 	if (bc.at_most()) {
-		os << bc.at_most().get() << "\n";
+		cc::writeln(os, " * At most: $.", bc.at_most().get());
 	}
 	else {
-		os << "none\n";
+		cc::writeln(os, " * At most: not provided.");
 	}
 
-	os << " * Multiple of: ";
 	if (bc.multiple_of()) {
-		os << bc.multiple_of().get() << "\n";
+		cc::writeln(os, " * Multiple of: $.", bc.multiple_of().get());
 	}
 	else {
-		os << "none\n";
+		cc::writeln(os, " * Multiple of: not provided.");
 	}
 
-	os << " * Align to: ";
 	if (bc.align_to()) {
-		os << bc.align_to().get() << "\n";
+		cc::writeln(os, " * Align to: $.", bc.align_to().get());
 	}
 	else {
-		os << "none\n";
+		cc::writeln(os, " * Align to: not provided.");
 	}
 	return os;
 }
@@ -201,36 +246,32 @@ std::ostream& operator<<(std::ostream& os, const buffer_constraints& bc)
 std::ostream&
 print_as_list_item(std::ostream& os, const buffer_constraints& bc)
 {
-	os << "  * At least: ";
 	if (bc.at_least()) {
-		os << bc.at_least().get() << "\n";
+		cc::writeln(os, "  * At least: $.", bc.at_least().get());
 	}
 	else {
-		os << "none\n";
+		cc::writeln(os, "  * At least: not provided.");
 	}
 
-	os << "  * At most: ";
 	if (bc.at_most()) {
-		os << bc.at_most().get() << "\n";
+		cc::writeln(os, "  * At most: $.", bc.at_most().get());
 	}
 	else {
-		os << "none\n";
+		cc::writeln(os, "  * At most: not provided.");
 	}
 
-	os << "  * Multiple of: ";
 	if (bc.multiple_of()) {
-		os << bc.multiple_of().get() << "\n";
+		cc::writeln(os, "  * Multiple of: $.", bc.multiple_of().get());
 	}
 	else {
-		os << "none\n";
+		cc::writeln(os, "  * Multiple of: not provided.");
 	}
 
-	os << "  * Align to: ";
 	if (bc.align_to()) {
-		os << bc.align_to().get() << "\n";
+		cc::writeln(os, "  * Align to: $.", bc.align_to().get());
 	}
 	else {
-		os << "none\n";
+		cc::writeln(os, "  * Align to: not provided.");
 	}
 	return os;
 }

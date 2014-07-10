@@ -21,7 +21,7 @@ namespace neo {
 
 class buffer
 {
-	enum buffer_source
+	enum source
 	{
 		memalign,
 		allocator,
@@ -30,7 +30,7 @@ class buffer
 
 	uint8_t* m_buf{};
 	size_t m_size{};
-	buffer_source m_src{external};
+	source m_src{external};
 public:
 	explicit buffer() noexcept {}
 

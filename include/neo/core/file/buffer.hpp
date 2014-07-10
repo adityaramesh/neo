@@ -18,6 +18,7 @@
 #include <neo/core/io_type.hpp>
 #include <neo/core/buffer_constraints.hpp>
 #include <neo/core/file/open_mode.hpp>
+#include <neo/core/file/system.hpp>
 
 namespace neo {
 namespace file {
@@ -58,6 +59,24 @@ public:
 	*/
 	explicit buffer(const buffer_constraints& bc)
 	{ resize_helper(bc); }
+
+	buffer(const buffer&) = delete;
+
+	buffer(buffer&& rhs) noexcept :
+	m_buf{rhs.m_buf}, m_size{rhs.m_size}, m_off{rhs.m_off}, m_src{rhs.m_src}
+	{ rhs.m_buf = nullptr; }
+
+	buffer& operator=(const buffer&) = delete;
+
+	buffer& operator=(buffer&& rhs) noexcept
+	{
+		this->~buffer();
+		m_buf = rhs.m_buf;
+		m_size = rhs.m_size;
+		m_off = rhs.m_off;
+		m_src = rhs.m_src;
+		return *this;
+	}
 
 	~buffer()
 	{
@@ -106,7 +125,9 @@ private:
 
 	void resize_helper(const buffer_constraints& bc)
 	{
-		m_size = min_size(bc).get();
+		auto s = min_size(bc);
+		m_size = s ? s.get() : ::getpagesize();
+
 		if (bc.align_to()) {
 			m_src = memalign;
 			auto r = ::posix_memalign((void**)&m_buf, bc.align_to().get(), m_size);

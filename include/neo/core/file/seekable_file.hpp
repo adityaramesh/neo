@@ -15,6 +15,7 @@
 #include <neo/core/file/buffer.hpp>
 #include <neo/core/file/io_strategy.hpp>
 #include <neo/core/file/system.hpp>
+#include <boost/utility/in_place_factory.hpp>
 
 #if PLATFORM_KERNEL == PLATFORM_KERNEL_LINUX || \
     PLATFORM_KERNEL == PLATFORM_KERNEL_XNU
@@ -25,6 +26,25 @@
 
 namespace neo {
 namespace file {
+
+#define ENABLE_IF_HAS_READ_ACCESS                                \
+	template <class T = void, typename std::enable_if<       \
+		std::is_same<T, T>::value &&                     \
+		open_mode_traits<OpenMode>::has_read_access, int \
+	>::type = 0>                                             \
+
+#define ENABLE_IF_HAS_WRITE_ACCESS                                \
+	template <class T = void, typename std::enable_if<        \
+		std::is_same<T, T>::value &&                      \
+		open_mode_traits<OpenMode>::has_write_access, int \
+	>::type = 0>                                              \
+
+#define ENABLE_IF_HAS_READ_WRITE_ACCESS                           \
+	template <class T = void, typename std::enable_if<        \
+		std::is_same<T, T>::value &&                      \
+		open_mode_traits<OpenMode>::has_read_access &&    \
+		open_mode_traits<OpenMode>::has_write_access, int \
+	>::type = 0>                                              \
 
 template <open_mode OpenMode>
 class seekable_file
@@ -56,7 +76,7 @@ public:
 			assert(is_seekable(m_fd));
 		#endif
 
-		apply(m_strat, m_fd);
+		apply<OpenMode>(m_strat, m_fd);
 
 		auto use_mmap =
 		(open_mode_traits<OpenMode>::has_read_access &&
@@ -101,8 +121,9 @@ public:
 			prot = PROT_READ | PROT_WRITE;
 		}
 
-		m_mapped = ::mmap(nullptr, m_mapped_size, prot, MAP_PRIVATE, m_fd, 0);
+		m_mapped = (uint8_t*)::mmap(nullptr, m_mapped_size, prot, MAP_PRIVATE, m_fd, 0);
 		if (m_mapped == (uint8_t*)-1) {
+			m_mapped = nullptr;
 			throw current_system_error();
 		}
 	}
@@ -112,7 +133,7 @@ public:
 		if (m_fd != -1) {
 			safe_close(m_fd).get();
 		}
-		if (m_mapped != (uint8_t*)-1) {
+		if (m_mapped != nullptr) {
 			if (::munmap(m_mapped, m_mapped_size) == -1) {
 				throw current_system_error();
 			}
@@ -121,15 +142,39 @@ public:
 
 	DEFINE_COPY_GETTER(handle, m_fd)
 
-	const boost::optional<buffer_constraints>&
+	ENABLE_IF_HAS_READ_WRITE_ACCESS bool
+	supports_dual_use_buffers() const
+	{ return m_strat.read_method() == m_strat.write_method(); }
+
+	const buffer_constraints&
 	required_constraints(io_type t) const noexcept
-	{ return m_strat.required_constraints(t); }
+	{
+		#ifndef NEO_NO_DEBUG
+			if (open_mode_traits<OpenMode>::is_read_only) {
+				assert(t == io_type::input);
+			}
+			else if (open_mode_traits<OpenMode>::is_write_only) {
+				assert(t == io_type::output);
+			}
+		#endif
+		return m_strat.required_constraints(t);
+	}
 
-	const boost::optional<buffer_constraints>&
+	const buffer_constraints&
 	preferred_constraints(io_type t) const noexcept
-	{ return m_strat.preferred_constraints(t); }
+	{
+		#ifndef NEO_NO_DEBUG
+			if (open_mode_traits<OpenMode>::is_read_only) {
+				assert(t == io_type::input);
+			}
+			else if (open_mode_traits<OpenMode>::is_write_only) {
+				assert(t == io_type::output);
+			}
+		#endif
+		return m_strat.preferred_constraints(t);
+	}
 
-	ibuffer_type
+	ENABLE_IF_HAS_READ_ACCESS ibuffer_type
 	allocate_ibuffer(const buffer_constraints& bc)
 	{
 		assert(m_strat.read_method());
@@ -143,7 +188,7 @@ public:
 		}
 	}
 
-	obuffer_type
+	ENABLE_IF_HAS_WRITE_ACCESS obuffer_type
 	allocate_obuffer(const buffer_constraints& bc)
 	{
 		assert(m_strat.write_method());
@@ -157,11 +202,12 @@ public:
 		}
 	}
 
-	boost::optional<iobuffer_type>
+	ENABLE_IF_HAS_READ_WRITE_ACCESS iobuffer_type
 	allocate_iobuffer(const buffer_constraints& bc)
 	{
 		assert(m_strat.read_method());
 		assert(m_strat.write_method());
+		assert(supports_dual_use_buffers());
 		assert(bc.satisfies(required_constraints(io_type::input | io_type::output)));
 
 		if (m_strat.read_method() == io_method::mmap) {
@@ -170,12 +216,12 @@ public:
 					m_mapped, m_mapped_size};
 			}
 			else {
-				return boost::none;
+				throw std::runtime_error{"Fused IO buffer not allowed."};
 			}
 		}
 		else {
 			if (m_strat.write_method() == io_method::mmap) {
-				return boost::none;
+				throw std::runtime_error{"Fused IO buffer not allowed."};
 			}
 			else {
 				return buffer{bc};
@@ -183,7 +229,7 @@ public:
 		}
 	}
 
-	cc::expected<void>
+	ENABLE_IF_HAS_READ_ACCESS cc::expected<void>
 	read(offset_type off, size_t n, buffer& buf)
 	{
 		assert(n > 0);
@@ -208,7 +254,7 @@ public:
 		}
 	}
 
-	cc::expected<void>
+	ENABLE_IF_HAS_WRITE_ACCESS cc::expected<void>
 	write(offset_type off, size_t n, const buffer& buf)
 	{
 		assert(m_strat.write_method());
@@ -225,4 +271,7 @@ public:
 
 }}
 
+#undef ENABLE_IF_HAS_READ_ACCESS
+#undef ENABLE_IF_HAS_WRITE_ACCESS
+#undef ENABLE_IF_HAS_READ_WRITE_ACCESS
 #endif

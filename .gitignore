@@ -5,6 +5,7 @@
 *.out
 *.run
 *.swp
+*.swo
 *.vim
 data/*
 

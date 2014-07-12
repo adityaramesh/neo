@@ -18,8 +18,11 @@ cost of using CRTP everywhere to force the relevant classes to obey the
 interface has no tangible benefits.
 
 - Stage 1: low-level IO classes.
-    - Implement `enable_if` for `alloacate` functions.
-    - Implement `read` and `write` methods for `file::seekable_file`.
+    - Remove `seekable_file` class and make the member functions global:
+	- Put the IO functions in `../io.hpp`.
+	    - When implementing the functions, use the IOMode template argument
+	    of `buffer` to enforce read and write safety.
+	- Create `io_test.hpp`.
 
 - Stage 2: serialization and deserialization classes.
     - Implement `io_status.hpp`.

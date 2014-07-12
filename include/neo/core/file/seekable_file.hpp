@@ -15,36 +15,9 @@
 #include <neo/core/file/buffer.hpp>
 #include <neo/core/file/io_strategy.hpp>
 #include <neo/core/file/system.hpp>
-#include <boost/utility/in_place_factory.hpp>
-
-#if PLATFORM_KERNEL == PLATFORM_KERNEL_LINUX || \
-    PLATFORM_KERNEL == PLATFORM_KERNEL_XNU
-	#include <sys/mman.h>
-#else
-	#error "Unsupported kernel."
-#endif
 
 namespace neo {
 namespace file {
-
-#define ENABLE_IF_HAS_READ_ACCESS                                \
-	template <class T = void, typename std::enable_if<       \
-		std::is_same<T, T>::value &&                     \
-		open_mode_traits<OpenMode>::has_read_access, int \
-	>::type = 0>                                             \
-
-#define ENABLE_IF_HAS_WRITE_ACCESS                                \
-	template <class T = void, typename std::enable_if<        \
-		std::is_same<T, T>::value &&                      \
-		open_mode_traits<OpenMode>::has_write_access, int \
-	>::type = 0>                                              \
-
-#define ENABLE_IF_HAS_READ_WRITE_ACCESS                           \
-	template <class T = void, typename std::enable_if<        \
-		std::is_same<T, T>::value &&                      \
-		open_mode_traits<OpenMode>::has_read_access &&    \
-		open_mode_traits<OpenMode>::has_write_access, int \
-	>::type = 0>                                              \
 
 template <open_mode OpenMode>
 class seekable_file
@@ -147,28 +120,28 @@ public:
 	{ return m_strat.read_method() == m_strat.write_method(); }
 
 	const buffer_constraints&
-	required_constraints(io_type t) const noexcept
+	required_constraints(io_mode t) const noexcept
 	{
 		#ifndef NEO_NO_DEBUG
 			if (open_mode_traits<OpenMode>::is_read_only) {
-				assert(t == io_type::input);
+				assert(t == io_mode::input);
 			}
 			else if (open_mode_traits<OpenMode>::is_write_only) {
-				assert(t == io_type::output);
+				assert(t == io_mode::output);
 			}
 		#endif
 		return m_strat.required_constraints(t);
 	}
 
 	const buffer_constraints&
-	preferred_constraints(io_type t) const noexcept
+	preferred_constraints(io_mode t) const noexcept
 	{
 		#ifndef NEO_NO_DEBUG
 			if (open_mode_traits<OpenMode>::is_read_only) {
-				assert(t == io_type::input);
+				assert(t == io_mode::input);
 			}
 			else if (open_mode_traits<OpenMode>::is_write_only) {
-				assert(t == io_type::output);
+				assert(t == io_mode::output);
 			}
 		#endif
 		return m_strat.preferred_constraints(t);
@@ -178,10 +151,10 @@ public:
 	allocate_ibuffer(const buffer_constraints& bc)
 	{
 		assert(m_strat.read_method());
-		assert(bc.satisfies(required_constraints(io_type::input)));
+		assert(bc.satisfies(required_constraints(io_mode::input)));
 
 		if (m_strat.read_method() == io_method::mmap) {
-			return buffer{io_type::input, m_mapped, m_mapped_size};
+			return buffer{io_mode::input, m_mapped, m_mapped_size};
 		}
 		else {
 			return buffer{bc};
@@ -192,10 +165,10 @@ public:
 	allocate_obuffer(const buffer_constraints& bc)
 	{
 		assert(m_strat.write_method());
-		assert(bc.satisfies(required_constraints(io_type::output)));
+		assert(bc.satisfies(required_constraints(io_mode::output)));
 
 		if (m_strat.write_method() == io_method::mmap) {
-			return buffer{io_type::output, m_mapped, m_mapped_size};
+			return buffer{io_mode::output, m_mapped, m_mapped_size};
 		}
 		else {
 			return buffer{bc};
@@ -208,11 +181,11 @@ public:
 		assert(m_strat.read_method());
 		assert(m_strat.write_method());
 		assert(supports_dual_use_buffers());
-		assert(bc.satisfies(required_constraints(io_type::input | io_type::output)));
+		assert(bc.satisfies(required_constraints(io_mode::input | io_mode::output)));
 
 		if (m_strat.read_method() == io_method::mmap) {
 			if (m_strat.write_method() == io_method::mmap) {
-				return buffer{io_type::input | io_type::output,
+				return buffer{io_mode::input | io_mode::output,
 					m_mapped, m_mapped_size};
 			}
 			else {
@@ -271,7 +244,4 @@ public:
 
 }}
 
-#undef ENABLE_IF_HAS_READ_ACCESS
-#undef ENABLE_IF_HAS_WRITE_ACCESS
-#undef ENABLE_IF_HAS_READ_WRITE_ACCESS
 #endif

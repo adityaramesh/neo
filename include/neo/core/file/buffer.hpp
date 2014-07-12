@@ -15,7 +15,7 @@
 #include <cstdint>
 #include <cstdlib>
 #include <memory>
-#include <neo/core/io_type.hpp>
+#include <neo/core/io_mode.hpp>
 #include <neo/core/buffer_constraints.hpp>
 #include <neo/core/file/open_mode.hpp>
 #include <neo/core/file/system.hpp>
@@ -23,14 +23,15 @@
 namespace neo {
 namespace file {
 
+template <io_mode IOMode>
 class buffer
 {
 	enum source
 	{
 		memalign,
 		allocator,
-		mmap_read,
-		mmap_write,
+		mmap_read_only,
+		mmap_write_only,
 		mmap_read_write
 	};
 
@@ -40,16 +41,21 @@ class buffer
 	source m_src;
 public:
 	/*
-	** Creates a mapped buffer with access permissions determined by the
-	** value of the given enum.
+	** Creates a buffer whose contents are backed by a mapped file.
 	*/
-	explicit buffer(io_type t, uint8_t* ptr, size_t size, off_t off = 0) noexcept
-	: m_buf{ptr}, m_size{size}, m_off{off}
+	explicit buffer(uint8_t* map, size_t size)
+	: m_buf{map}, m_size{size}
 	{
-		switch (t) {
-		case io_type::input: m_src = mmap_read; break;
-		case io_type::output: m_src = mmap_write; break;
-		case io_type::input | io_type::output: m_src = mmap_read_write; break;
+		switch (IOMode) {
+		case io_mode::input:
+			m_src = mmap_read_only;
+			break;
+		case io_mode::output:
+			m_src = mmap_write_only;
+			break;
+		case io_mode::input | io_mode::output:
+			m_src = mmap_read_write;
+			break;
 		}
 	}
 
@@ -87,13 +93,13 @@ public:
 	}
 
 	decltype(m_buf) data() const { return m_buf + m_off; }
-	bool readable() const { return m_src != mmap_write; }
-	bool writable() const { return m_src != mmap_read; }
+	bool readable() const { return m_src != mmap_write_only; }
+	bool writable() const { return m_src != mmap_read_only; }
 
 	bool mapped() const
 	{
-		return m_src == mmap_read  ||
-		       m_src == mmap_write ||
+		return m_src == mmap_read_only ||
+		       m_src == mmap_write_only ||
 		       m_src == mmap_read_write;
 	}
 
@@ -111,10 +117,7 @@ public:
 		return *this;
 	}
 private:
-	template <open_mode>
-	friend class seekable_file;
-
-	decltype(m_buf) base_pointer() const { return m_buf; }
+	// TODO friend global read/write functions.
 
 	buffer& offset(off_t off)
 	{

@@ -21,8 +21,8 @@
         - `preferred_constraints`
 	- `required_constraints`
     - Member functions:
-        - `required_constraints(io_type)`
-	- `preferred_constraints(io_type)`
+        - `required_constraints(io_mode)`
+	- `preferred_constraints(io_mode)`
     	- `allocate_ibuffer(bc)` (if appropriate)
 	- `allocate_obuffer(bc)` (if_appropriate)
 	- `allocate_iobuffer(bc)` (if_appropriate)

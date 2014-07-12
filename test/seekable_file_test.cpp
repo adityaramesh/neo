@@ -6,14 +6,16 @@
 */
 
 #include <ccbase/unit_test.hpp>
+
+/*
 #include <neo/core/file/seekable_file.hpp>
 
 module("test allocation")
 {
 	namespace file = neo::file;
 	using neo::access_mode::sequential;
-	using neo::io_type::input;
-	using neo::io_type::output;
+	using neo::io_mode::input;
+	using neo::io_mode::output;
 	using file::open_mode::read;
 	using file::open_mode::create_if_not_exists;
 	using file::open_mode::modify;
@@ -45,6 +47,12 @@ module("test allocation")
 		auto b3 = f3.allocate_iobuffer(c3);
 		require(b3.size() > 0);
 	}
+}
+*/
+
+module("test read")
+{
+
 }
 
 suite("Tests the seekable_file class.")

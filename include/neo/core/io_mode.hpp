@@ -1,5 +1,5 @@
 /*
-** File Name: io_type.hpp
+** File Name: io_mode.hpp
 ** Author:    Aditya Ramesh
 ** Date:      07/09/2014
 ** Contact:   _@adityaramesh.com
@@ -12,13 +12,13 @@
 
 namespace neo {
 
-enum class io_type : unsigned
+enum class io_mode : unsigned
 {
 	input  = 1,
 	output = 2,
 };
 
-DEFINE_ENUM_BITWISE_OPERATORS(io_type)
+DEFINE_ENUM_BITWISE_OPERATORS(io_mode)
 
 }
 

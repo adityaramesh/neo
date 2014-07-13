@@ -9,7 +9,9 @@
 #define Z5A38F0F5_4A8B_46DE_8297_588006B2CCBF
 
 #include <algorithm>
+#include <type_traits>
 #include <neo/core/file/buffer.hpp>
+#include <neo/core/file/handle.hpp>
 #include <neo/core/file/strategy.hpp>
 #include <neo/core/file/system.hpp>
 
@@ -18,14 +20,15 @@ namespace file {
 
 template <
 	io_mode IOMode,
-	typename std::enable_if<!!(IOMode & io_mode::input), int>::type
+	typename std::enable_if<!!(IOMode & io_mode::input), int>::type = 0
 >
 cc::expected<void>
 read(
 	const handle<IOMode>& h,
-	offset_type off,
+	off_t off,
 	size_t n,
-	buffer<IOMode>& b
+	buffer<IOMode>& b,
+	const strategy<IOMode>& s
 ) noexcept
 {
 	assert(n > 0);
@@ -58,14 +61,15 @@ read(
 
 template <
 	io_mode IOMode,
-	typename std::enable_if<!!(IOMode & io_mode::output), int>::type
+	typename std::enable_if<!!(IOMode & io_mode::output), int>::type = 0
 >
 cc::expected<void>
 write(
 	const handle<IOMode>& h,
-	offset_type off,
+	off_t off,
 	size_t n,
-	const buffer<IOMode>& b
+	const buffer<IOMode>& b,
+	const strategy<IOMode>& s
 ) noexcept
 {
 	assert(n > 0);
@@ -77,7 +81,8 @@ write(
 	switch (s.write_method().get()) {
 	case io_method::mmap:
 		if (b.mapped() && b.map() == h.map()) {
-			return;
+			// There is nothing to be done in this case, since the
+			// data buffer is a memory map.
 		}
 		else {
 			assert(b.readable());
@@ -85,7 +90,7 @@ write(
 		}
 		return true;
 	case io_method::paging:
-	case io_method::direct;
+	case io_method::direct:
 		assert(b.readable());
 		auto r = full_write(h.descriptor(), b.data(), n, off);
 		if (!r) { return r.exception(); }

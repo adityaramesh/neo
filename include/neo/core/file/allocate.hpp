@@ -44,6 +44,16 @@ allocate_ibuffer(
 
 template <
 	io_mode IOMode,
+	typename std::enable_if<!!(IOMode & io_mode::input), int>::type = 0
+>
+buffer<IOMode>
+allocate_ibuffer(const handle<IOMode>& h, const strategy<IOMode>& s)
+{
+	return allocate_ibuffer(h, s, s.preferred_constraints(io_mode::input));
+}
+
+template <
+	io_mode IOMode,
 	typename std::enable_if<!!(IOMode & io_mode::output), int>::type = 0
 >
 buffer<IOMode>
@@ -62,6 +72,16 @@ allocate_obuffer(
 	else {
 		return buffer<IOMode>{bc};
 	}
+}
+
+template <
+	io_mode IOMode,
+	typename std::enable_if<!!(IOMode & io_mode::output), int>::type = 0
+>
+buffer<IOMode>
+allocate_obuffer(const handle<IOMode>& h, const strategy<IOMode>& s)
+{
+	return allocate_obuffer(h, s, s.preferred_constraints(io_mode::output));
 }
 
 buffer<io_mode::input | io_mode::output>
@@ -83,6 +103,16 @@ allocate_iobuffer(
 	else {
 		return buffer_type{bc};
 	}
+}
+
+buffer<io_mode::input | io_mode::output>
+allocate_iobuffer(
+	const handle<io_mode::input | io_mode::output>& h,
+	const strategy<io_mode::input | io_mode::output>& s
+)
+{
+	return allocate_iobuffer(h, s, s.preferred_constraints(
+		io_mode::input | io_mode::output));
 }
 
 }}

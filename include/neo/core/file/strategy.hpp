@@ -178,6 +178,38 @@ public:
 		}
 	}
 
+	const buffer_constraints&
+	required_constraints(io_mode m) const
+	{
+		switch (m) {
+		case io_mode::input:
+			assert(IOMode & io_mode::input);
+			return m_ireq;
+		case io_mode::output:
+			assert(IOMode & io_mode::output);
+			return m_oreq;
+		case io_mode::input | io_mode::output:
+			assert(IOMode == io_mode::input | io_mode::output);
+			return m_ioreq;
+		}
+	}
+
+	const buffer_constraints&
+	preferred_constraints(io_mode m) const
+	{
+		switch (m) {
+		case io_mode::input:
+			assert(IOMode & io_mode::input);
+			return m_ipref;
+		case io_mode::output:
+			assert(IOMode & io_mode::output);
+			return m_opref;
+		case io_mode::input | io_mode::output:
+			assert(IOMode == io_mode::input | io_mode::output);
+			return m_iopref;
+		}
+	}
+
 	strategy&
 	required_constraints(io_mode m, buffer_constraints& bc)
 	{

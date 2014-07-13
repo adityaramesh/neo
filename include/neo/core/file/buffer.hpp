@@ -122,8 +122,6 @@ public:
 		resize_helper(bc);
 		return *this;
 	}
-private:
-	// TODO friend global read/write functions.
 
 	buffer& offset(off_t off)
 	{
@@ -131,7 +129,7 @@ private:
 		m_off = off;
 		return *this;
 	}
-
+private:
 	void resize_helper(const buffer_constraints& bc)
 	{
 		auto s = min_size(bc);

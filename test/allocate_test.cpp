@@ -29,22 +29,22 @@ module("test allocate")
 
 	auto s1 = file::strategy<input>{path}.infer_defaults(sequential);
 	auto h1 = file::open<read>(path, s1).move();
-	auto b1 = file::allocate_ibuffer(h1, s1, s1.preferred_constraints(input));
+	auto b1 = file::allocate_ibuffer(h1, s1);
 	require(b1.size() > 0);
 
 	auto s2 = file::strategy<input>{path}.infer_defaults(random);
 	auto h2 = file::open<read>(path, s2).move();
-	auto b2 = file::allocate_ibuffer(h2, s2, s2.preferred_constraints(input));
+	auto b2 = file::allocate_ibuffer(h2, s2);
 	require(b2.size() > 0);
 
 	auto s3 = file::strategy<input | output>{path}.infer_defaults(sequential);
 	auto h3 = file::open<modify>(path, s3).move();
-	auto b3 = file::allocate_ibuffer(h3, s3, s3.preferred_constraints(input | output));
+	auto b3 = file::allocate_ibuffer(h3, s3);
 	require(b3.size() > 0);
 
 	auto s4 = file::strategy<input | output>{path}.infer_defaults(random);
 	auto h4 = file::open<modify>(path, s4).move();
-	auto b4 = file::allocate_ibuffer(h4, s4, s4.preferred_constraints(input | output));
+	auto b4 = file::allocate_ibuffer(h4, s4);
 	require(b4.size() > 0);
 }
 

@@ -10,19 +10,17 @@
 - Use the DSA file format to implement boosting for data sets that cannot fit in
 RAM. One component of the tuple should be used to store the weight associated
 with each example.
+- Implement `file::copy`, with offsets and an enum to control replacement
+behavior. Refer to Boost.Filesystem's `copy_file` for this.
+- Add CSV support to `neo`. This may be involved because it requires parsing
+date times, floats, phone numbers, addresses, etc. Should custom types be
+provided for these?
 
 # TODO
 
 - Note about concepts: do not implement Device, Serializer, or Deserializer. The
 cost of using CRTP everywhere to force the relevant classes to obey the
 interface has no tangible benefits.
-
-- Stage 1: low-level IO classes.
-    - Remove `seekable_file` class and make the member functions global:
-	- Put the IO functions in `../io.hpp`.
-	    - When implementing the functions, use the IOMode template argument
-	    of `buffer` to enforce read and write safety.
-	- Create `io_test.hpp`.
 
 - Stage 2: serialization and deserialization classes.
     - Implement `io_status.hpp`.

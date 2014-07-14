@@ -81,8 +81,8 @@ bool is_consistent(
 			return false;
 		}
 		if (at_least && at_most) {
-			auto l = at_least.get();
-			auto m = multiple_of.get();
+			auto l = *at_least;
+			auto m = *multiple_of;
 			if (l % m != 0) {
 				if (l + m - l % m > at_most) {
 					return false;
@@ -195,14 +195,14 @@ bool buffer_constraints::satisfies(const buffer_constraints& bc)
 
 	if (
 		multiple_of() && bc.multiple_of() &&
-		multiple_of().get() % bc.multiple_of().get() != 0
+		*multiple_of() % *bc.multiple_of() != 0
 	) {
 		return false;
 	}
 
 	if (
 		align_to() && bc.align_to() &&
-		align_to().get() % bc.align_to().get() != 0
+		*align_to() % *bc.align_to() != 0
 	) {
 		return false;
 	}
@@ -214,28 +214,28 @@ std::ostream& operator<<(std::ostream& os, const buffer_constraints& bc)
 	cc::writeln(os, "Buffer constraints:");
 
 	if (bc.at_least()) {
-		cc::writeln(os, " * At least: $.", bc.at_least().get());
+		cc::writeln(os, " * At least: $.", *bc.at_least());
 	}
 	else {
 		cc::writeln(os, " * At least: not provided.");
 	}
 
 	if (bc.at_most()) {
-		cc::writeln(os, " * At most: $.", bc.at_most().get());
+		cc::writeln(os, " * At most: $.", *bc.at_most());
 	}
 	else {
 		cc::writeln(os, " * At most: not provided.");
 	}
 
 	if (bc.multiple_of()) {
-		cc::writeln(os, " * Multiple of: $.", bc.multiple_of().get());
+		cc::writeln(os, " * Multiple of: $.", *bc.multiple_of());
 	}
 	else {
 		cc::writeln(os, " * Multiple of: not provided.");
 	}
 
 	if (bc.align_to()) {
-		cc::writeln(os, " * Align to: $.", bc.align_to().get());
+		cc::writeln(os, " * Align to: $.", *bc.align_to());
 	}
 	else {
 		cc::writeln(os, " * Align to: not provided.");
@@ -247,28 +247,28 @@ std::ostream&
 print_as_list_item(std::ostream& os, const buffer_constraints& bc)
 {
 	if (bc.at_least()) {
-		cc::writeln(os, "  * At least: $.", bc.at_least().get());
+		cc::writeln(os, "  * At least: $.", *bc.at_least());
 	}
 	else {
 		cc::writeln(os, "  * At least: not provided.");
 	}
 
 	if (bc.at_most()) {
-		cc::writeln(os, "  * At most: $.", bc.at_most().get());
+		cc::writeln(os, "  * At most: $.", *bc.at_most());
 	}
 	else {
 		cc::writeln(os, "  * At most: not provided.");
 	}
 
 	if (bc.multiple_of()) {
-		cc::writeln(os, "  * Multiple of: $.", bc.multiple_of().get());
+		cc::writeln(os, "  * Multiple of: $.", *bc.multiple_of());
 	}
 	else {
 		cc::writeln(os, "  * Multiple of: not provided.");
 	}
 
 	if (bc.align_to()) {
-		cc::writeln(os, "  * Align to: $.", bc.align_to().get());
+		cc::writeln(os, "  * Align to: $.", *bc.align_to());
 	}
 	else {
 		cc::writeln(os, "  * Align to: not provided.");
@@ -285,8 +285,8 @@ min_size(const buffer_constraints& bc)
 	if (!bc.at_least()) { return boost::none; }
 	if (!bc.multiple_of()) { return bc.at_least(); }
 	
-	auto l = bc.at_least().get();
-	auto m = bc.multiple_of().get();
+	auto l = *bc.at_least();
+	auto m = *bc.multiple_of();
 	return l % m == 0 ? m : l + m - l % m;
 }
 
@@ -299,8 +299,8 @@ max_size(const buffer_constraints& bc)
 	if (!bc.at_most()) { return boost::none; }
 	if (!bc.multiple_of()) { return bc.at_most(); }
 
-	auto g = bc.at_most().get();
-	auto m = bc.multiple_of().get();
+	auto g = *bc.at_most();
+	auto m = *bc.multiple_of();
 	return g % m == 0 ? g : g - g % m;
 }
 
@@ -318,7 +318,7 @@ merge_strong(const buffer_constraints& x, const buffer_constraints& y)
 
 	if (x.at_least()) {
 		if (y.at_least()) {
-			at_least = std::max(x.at_least().get(), y.at_least().get());
+			at_least = std::max(*x.at_least(), *y.at_least());
 		}
 		else {
 			at_least = x.at_least();
@@ -330,7 +330,7 @@ merge_strong(const buffer_constraints& x, const buffer_constraints& y)
 
 	if (x.at_most()) {
 		if (y.at_most()) {
-			at_most = std::min(x.at_most().get(), y.at_most().get());
+			at_most = std::min(*x.at_most(), *y.at_most());
 		}
 		else {
 			at_most = x.at_most();
@@ -343,8 +343,8 @@ merge_strong(const buffer_constraints& x, const buffer_constraints& y)
 	if (x.multiple_of()) {
 		if (y.multiple_of()) {
 			multiple_of = boost::math::lcm(
-				x.multiple_of().get(),
-				y.multiple_of().get()
+				*x.multiple_of(),
+				*y.multiple_of()
 			);
 		}
 		else {
@@ -358,8 +358,8 @@ merge_strong(const buffer_constraints& x, const buffer_constraints& y)
 	if (x.align_to()) {
 		if (y.align_to()) {
 			align_to = boost::math::lcm(
-				x.align_to().get(),
-				y.align_to().get()
+				*x.align_to(),
+				*y.align_to()
 			);
 		}
 		else {
@@ -397,8 +397,8 @@ merge_weak(const buffer_constraints& bc, const buffer_constraints& hint)
 	if (bc.multiple_of()) {
 		if (hint.multiple_of()) {
 			multiple_of = boost::math::lcm(
-				bc.multiple_of().get(),
-				hint.multiple_of().get()
+				*bc.multiple_of(),
+				*hint.multiple_of()
 			);
 		}
 		else {
@@ -419,9 +419,9 @@ merge_weak(const buffer_constraints& bc, const buffer_constraints& hint)
 		if (bc.at_most()) {
 			at_most = bc.at_most();
 			if (multiple_of) {
-				auto l = bc.at_least().get();
-				auto g = bc.at_most().get();
-				auto m = multiple_of.get();
+				auto l = *bc.at_least();
+				auto g = *bc.at_most();
+				auto m = *multiple_of;
 				if (l % m != 0 && l + m - l % m > g) {
 					multiple_of = bc.multiple_of();
 				}
@@ -443,11 +443,11 @@ merge_weak(const buffer_constraints& bc, const buffer_constraints& hint)
 		if (at_least) {
 			if (hint.at_least() > at_least) {
 				if (at_most) {
-					auto l = hint.at_least().get();
-					auto g = at_most.get();
+					auto l = *hint.at_least();
+					auto g = *at_most;
 					if (l <= g) {
 						if (multiple_of) {
-							auto m = multiple_of.get();
+							auto m = *multiple_of;
 							if (l % m == 0 || l + m - l % m <= g) {
 								at_least = hint.at_least();
 							}
@@ -470,11 +470,11 @@ merge_weak(const buffer_constraints& bc, const buffer_constraints& hint)
 		if (at_most) {
 			if (hint.at_most() < at_most) {
 				if (at_least) {
-					auto l = at_least.get();
-					auto g = hint.at_most().get();
+					auto l = *at_least;
+					auto g = *hint.at_most();
 					if (l <= g) {
 						if (multiple_of) {
-							auto m = multiple_of.get();
+							auto m = *multiple_of;
 							if (l % m == 0 || l + m - l % m <= g) {
 								at_most = hint.at_most();
 							}
@@ -501,8 +501,8 @@ merge_weak(const buffer_constraints& bc, const buffer_constraints& hint)
 	if (bc.align_to()) {
 		if (hint.align_to()) {
 			align_to = boost::math::lcm(
-				bc.align_to().get(),
-				hint.align_to().get()
+				*bc.align_to(),
+				*hint.align_to()
 			);
 		}
 		else {

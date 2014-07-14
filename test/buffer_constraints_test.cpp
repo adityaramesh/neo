@@ -16,13 +16,13 @@ module("test min_size")
 	require(min_size(bc1) == none);
 
 	auto bc2 = neo::buffer_constraints{10, 10, 10, none};
-	require(min_size(bc2).get() == 10);
+	require(*min_size(bc2) == 10);
 
 	auto bc3 = neo::buffer_constraints{10, 20, 10, none};
-	require(min_size(bc3).get() == 10);
+	require(*min_size(bc3) == 10);
 
 	auto bc4 = neo::buffer_constraints{10, 20, 4, none};
-	require(min_size(bc4).get() == 12);
+	require(*min_size(bc4) == 12);
 }
 
 module("test max_size")
@@ -33,13 +33,13 @@ module("test max_size")
 	require(max_size(bc1) == none);
 
 	auto bc2 = neo::buffer_constraints{10, 10, 10, none};
-	require(max_size(bc2).get() == 10);
+	require(*max_size(bc2) == 10);
 
 	auto bc3 = neo::buffer_constraints{10, 20, 10, none};
-	require(max_size(bc3).get() == 20);
+	require(*max_size(bc3) == 20);
 
 	auto bc4 = neo::buffer_constraints{10, 20, 4, none};
-	require(max_size(bc4).get() == 20);
+	require(*max_size(bc4) == 20);
 }
 
 module("test merge_strong")
@@ -49,7 +49,7 @@ module("test merge_strong")
 	auto a1 = neo::buffer_constraints{10, 40, none, none};
 	auto a2 = neo::buffer_constraints{20, 30, none, none};
 	auto a3 = merge_strong(a1, a2);
-	require(a3.get() == a2);
+	require(*a3 == a2);
 
 	auto b1 = neo::buffer_constraints{10, 20, none, none};
 	auto b2 = neo::buffer_constraints{30, 40, none, none};
@@ -84,7 +84,7 @@ module("test merge_weak")
 	auto c1 = neo::buffer_constraints{none, none, 5, none};
 	auto c2 = neo::buffer_constraints{none, none, 7, none};
 	auto c3 = merge_weak(c1, c2);
-	require(c3.multiple_of().get() == 35);
+	require(*c3.multiple_of() == 35);
 
 	auto d1 = neo::buffer_constraints{none, 10, 5, none};
 	auto d2 = neo::buffer_constraints{none, 10, 7, none};

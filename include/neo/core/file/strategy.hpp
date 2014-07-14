@@ -124,7 +124,7 @@ public:
 	*/
 	strategy& update_with(const char* path)
 	{
-		auto st = safe_stat(path).get();
+		auto st = safe_stat(path).move();
 		if (!!(IOMode & io_mode::input)) {
 			m_cur_fs = st.st_size;
 			m_blksize = st.st_blksize;
@@ -341,25 +341,25 @@ strategy<IOMode>& strategy<IOMode>::infer_defaults(access_mode m)
 				m_rdahead = true;
 				m_ipref.at_least(40_KB)
 					.at_most(256_KB)
-					.align_to(m_blksize.get());
+					.align_to(*m_blksize);
 			#elif PLATFORM_KERNEL == PLATFORM_KERNEL_XNU
 				m_rdahead = true;
-				if ((uint64_t)m_cur_fs.get() < 256_MB) {
+				if ((uint64_t)*m_cur_fs < 256_MB) {
 					m_ipref.at_least(4_KB)
 						.at_most(1024_KB)
-						.align_to(m_blksize.get());
+						.align_to(*m_blksize);
 				}
 				else {
 					m_ipref.at_least(4096_KB)
-						.align_to(m_blksize.get());
+						.align_to(*m_blksize);
 				}
 			#endif
 		}
 		else {
 			m_read_mtd = io_method::direct;
 			m_rdahead = false;
-			m_ireq.align_to(m_blksize.get());
-			m_ipref.align_to(m_blksize.get());
+			m_ireq.align_to(*m_blksize);
+			m_ipref.align_to(*m_blksize);
 		}
 	}
 	else if (IOMode == io_mode::output) {
@@ -369,7 +369,7 @@ strategy<IOMode>& strategy<IOMode>::infer_defaults(access_mode m)
 		if (m == access_mode::sequential) {
 			#if PLATFORM_KERNEL == PLATFORM_KERNEL_LINUX
 				m_write_mtd = io_method::paging;
-				m_opref.at_least(4096_KB).align_to(m_blksize.get());
+				m_opref.at_least(4096_KB).align_to(*m_blksize);
 			#elif PLATFORM_KERNEL == PLATFORM_KERNEL_XNU
 				m_write_mtd = io_method::paging;
 				m_opref.at_least(1024_KB);
@@ -377,8 +377,8 @@ strategy<IOMode>& strategy<IOMode>::infer_defaults(access_mode m)
 		}
 		else {
 			m_write_mtd = io_method::direct;
-			m_oreq.align_to(m_blksize.get());
-			m_opref.align_to(m_blksize.get());
+			m_oreq.align_to(*m_blksize);
+			m_opref.align_to(*m_blksize);
 		}
 	}
 	else {
@@ -399,22 +399,22 @@ strategy<IOMode>& strategy<IOMode>::infer_defaults(access_mode m)
 			m_read_mtd = io_method::paging;
 			m_write_mtd = io_method::paging;
 
-			m_ipref.align_to(m_blksize.get());
-			m_opref.align_to(m_blksize.get());
-			m_iopref.align_to(m_blksize.get());
+			m_ipref.align_to(*m_blksize);
+			m_opref.align_to(*m_blksize);
+			m_iopref.align_to(*m_blksize);
 		}
 		else {
 			m_rdahead = false;
 			m_read_mtd = io_method::direct;
 			m_write_mtd = io_method::direct;
 
-			m_ireq.align_to(m_blksize.get());
-			m_oreq.align_to(m_blksize.get());
-			m_ioreq.align_to(m_blksize.get());
+			m_ireq.align_to(*m_blksize);
+			m_oreq.align_to(*m_blksize);
+			m_ioreq.align_to(*m_blksize);
 
-			m_ipref.align_to(m_blksize.get());
-			m_opref.align_to(m_blksize.get());
-			m_iopref.align_to(m_blksize.get());
+			m_ipref.align_to(*m_blksize);
+			m_opref.align_to(*m_blksize);
+			m_iopref.align_to(*m_blksize);
 		}
 	}
 	return *this;
@@ -426,35 +426,35 @@ std::ostream& operator<<(std::ostream& os, const strategy<IOMode>& s)
 	cc::writeln(os, "strategy object:");
 
 	if (s.read_method()) {
-		cc::writeln(os, " * Read method: $.", s.read_method().get());
+		cc::writeln(os, " * Read method: $.", *s.read_method());
 	}
 	else {
 		cc::writeln(os, " * Read method: none.");
 	}
 
 	if (s.write_method()) {
-		cc::writeln(os, " * Write method: $.", s.write_method().get());
+		cc::writeln(os, " * Write method: $.", *s.write_method());
 	}
 	else {
 		cc::writeln(os, " * Write method: none.");
 	}
 
 	if (s.current_file_size()) {
-		cc::writeln(os, " * Current file size: $.", s.current_file_size().get());
+		cc::writeln(os, " * Current file size: $.", *s.current_file_size());
 	}
 	else {
 		cc::writeln(os, " * Current file size: not provided.");
 	}
 
 	if (s.maximum_file_size()) {
-		cc::writeln(os, " * Maximum file size: $.", s.maximum_file_size().get());
+		cc::writeln(os, " * Maximum file size: $.", *s.maximum_file_size());
 	}
 	else {
 		cc::writeln(os, " * Maximum file size: not provided.");
 	}
 
 	if (s.block_size()) {
-		cc::writeln(os, " * Block size: $.", s.block_size().get());
+		cc::writeln(os, " * Block size: $.", *s.block_size());
 	}
 	else {
 		cc::writeln(os, " * Block size: not provided.");

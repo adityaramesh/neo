@@ -133,11 +133,11 @@ private:
 	void resize_helper(const buffer_constraints& bc)
 	{
 		auto s = min_size(bc);
-		m_size = s ? s.get() : ::getpagesize();
+		m_size = s ? *s : ::getpagesize();
 
 		if (bc.align_to()) {
 			m_src = memalign;
-			auto r = ::posix_memalign((void**)&m_buf, bc.align_to().get(), m_size);
+			auto r = ::posix_memalign((void**)&m_buf, *bc.align_to(), m_size);
 			if (r != 0) {
 				throw std::system_error{r, std::system_category()};
 			}

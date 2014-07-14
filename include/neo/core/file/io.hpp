@@ -40,7 +40,7 @@ read(
 		assert(off + n <= s.maximum_file_size());
 	}
 
-	switch (s.read_method().get()) {
+	switch (*s.read_method()) {
 	case io_method::mmap:
 		if (b.mapped() && b.map() == h.map()) {
 			b.offset(off);
@@ -78,7 +78,7 @@ write(
 		assert(off + n <= s.maximum_file_size());
 	}
 
-	switch (s.write_method().get()) {
+	switch (*s.write_method()) {
 	case io_method::mmap:
 		if (b.mapped() && b.map() == h.map()) {
 			// There is nothing to be done in this case, since the

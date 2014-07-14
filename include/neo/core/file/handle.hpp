@@ -101,7 +101,7 @@ public:
 	handle& close()
 	{
 		if (m_fd != -1) {
-			safe_close(m_fd).get();
+			*safe_close(m_fd);
 		}
 		return *this;
 	}
@@ -149,17 +149,17 @@ noexcept
 		) {
 			auto r = safe_open(path, flags | O_DIRECT);
 			if (!r) { return r.exception(); }
-			else { fd = r.get(); }
+			else { fd = *r; }
 		}
 		else {
 			auto r = safe_open(path, flags);
 			if (!r) { return r.exception(); }
-			else { fd = r.get(); }
+			else { fd = *r; }
 		}
 	#elif PLATFORM_KERNEL == PLATFORM_KERNEL_XNU
 		auto r = safe_open(path, flags);
 		if (!r) { return r.exception(); }
-		else { fd = r.get(); }
+		else { fd = *r; }
 	#endif
 	
 	/*
@@ -179,15 +179,15 @@ noexcept
 	if (!!(IOMode & io_mode::input)) {
 		if (s.read_ahead()) {
 			#if PLATFORM_KERNEL == PLATFORM_KERNEL_LINUX
-				auto r1 = safe_fadvise_sequential(fd, s.current_file_size().get());
+				auto r1 = safe_fadvise_sequential(fd, *s.current_file_size());
 				if (!r1) {
 					auto r2 = safe_close(fd);
 					if (!r2) { return r2.exception(); }
 					return r1.exception(); }
 				}
 			#elif PLATFORM_KERNEL == PLATFORM_KERNEL_XNU
-				if ((uint64_t)s.current_file_size().get() < 256_MB) {
-					auto r1 = safe_rdadvise(fd, s.current_file_size().get());
+				if ((uint64_t)*s.current_file_size() < 256_MB) {
+					auto r1 = safe_rdadvise(fd, *s.current_file_size());
 					if (!r1) {
 						auto r2 = safe_close(fd);
 						if (!r2) { return r2.exception(); }
@@ -207,7 +207,7 @@ noexcept
 	}
 	if (!!(IOMode & io_mode::output)) {
 		if (s.preallocate() && s.maximum_file_size()) {
-			auto r1 = safe_preallocate(fd, s.maximum_file_size().get());
+			auto r1 = safe_preallocate(fd, *s.maximum_file_size());
 			if (!r1) {
 				auto r2 = safe_close(fd);
 				if (!r2) { return r2.exception(); }
@@ -217,10 +217,10 @@ noexcept
 	}
 
 	if (s.write_method() && s.write_method() == io_method::mmap) {
-		return handle<IOMode>{fd, (size_t)s.maximum_file_size().get()};
+		return handle<IOMode>{fd, (size_t)*s.maximum_file_size()};
 	}
 	else if (s.read_method() && s.read_method() == io_method::mmap) {
-		return handle<IOMode>{fd, (size_t)s.current_file_size().get()};
+		return handle<IOMode>{fd, (size_t)*s.current_file_size()};
 	}
 	else {
 		return handle<IOMode>{fd};

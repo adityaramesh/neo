@@ -23,20 +23,15 @@ cost of using CRTP everywhere to force the relevant classes to obey the
 interface has no tangible benefits.
 
 - Stage 2: serialization and deserialization classes.
-    - Implement `io_status.hpp`.
-    - Implement `io_state.hpp`.
-    - Implement `severity.hpp`.
-    - Implement `buffer_state.hpp`.
+    - `io_status.hpp`
+    - `buffer_state.hpp`
+    - `mnist::context`?
+    - `mnist::context.hpp`
+    - `mnist::error_state.hpp` `(aliased to std::vector<log_record>)`
+    - `mnist::input_state`
+    - `mnist::log_record.hpp`
 
-- Stage 3: CSV support with tuples.
-    - Implement `csv::header_reader.hpp`.
-    - Implement `csv::deserializer.hpp`.
-    - Test both of the above.
-    - Implement `csv::header_writer.hpp`.
-    - Implement `csv::serializer.hpp`.
-    - Test both of the above.
-
-- Stage 4: MNIST and tuple support.
+- Stage 3: MNIST and tuple support.
     - Implement `mnist::header_reader.hpp`.
     - Implement `mnist::deserializer.hpp`.
     - Test both of the above.

@@ -71,6 +71,7 @@ object describing the file format):
     - `info`
     - `warning`
     - `error`
+    - `critical`
 
 - `context`:
     - Object that tracks location in file at which the error occurred.

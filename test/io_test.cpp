@@ -15,31 +15,22 @@ constexpr auto str2 = "his Project Gutenberg etext of Moby Dick, by Herman Melvi
 
 module("test read")
 {
+	using namespace neo;
 	namespace file = neo::file;
-
-	using neo::access_mode::sequential;
-	using neo::access_mode::random;
-
-	using neo::io_mode::input;
-	using neo::io_mode::output;
-
-	using file::open_mode::read;
-	using file::open_mode::create_if_not_exists;
-	using file::open_mode::create_or_replace;
-	using file::open_mode::replace_if_exists;
-	using file::open_mode::modify;
-
+	using file::open_mode;
 	constexpr auto path = "data/text/moby_dick.txt";
 
-	auto s = file::strategy<input>{path}.infer_defaults(random);
-	auto h = file::open<read>(path, s).move();
+	auto s = file::strategy<io_mode::input>{path};
+	s.infer_defaults(access_mode::random);
+
+	auto h = file::open<open_mode::read>(path, s).move();
 	auto b = file::allocate_ibuffer(h, s);
 	
 	file::read(h, 0, 64, b, s);
 	require(std::memcmp(b.data(), str1, 64) == 0);
 
 	file::read(h, s.current_file_size().get() - 64, 64, b, s);
-	require(std::memcmp(b.data(), str2, 61) == 0);
+	require(std::memcmp(b.data(), str2, 64) == 0);
 }
 
 suite("Tests the file IO functionality.")

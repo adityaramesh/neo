@@ -8,7 +8,7 @@
 #ifndef Z68EEB476_1C46_4C67_B314_9D2B39ABE8D9
 #define Z68EEB476_1C46_4C67_B314_9D2B39ABE8D9
 
-#include <neo/core/bitmask_enum.hpp>
+#include <neo/utility/bitmask_enum.hpp>
 
 namespace neo {
 

@@ -15,6 +15,9 @@ behavior. Refer to Boost.Filesystem's `copy_file` for this.
 - Add CSV support to `neo`. This may be involved because it requires parsing
 date times, floats, phone numbers, addresses, etc. Should custom types be
 provided for these?
+- The `vector` owned by the `error_state` class is not thread-safe. If the
+logging messages need to be printed on different thread(s) than the one that is
+performing the IO, then we need to replace `vector` with a SPSC/SPMC queue.
 
 # TODO
 
@@ -22,24 +25,20 @@ provided for these?
 cost of using CRTP everywhere to force the relevant classes to obey the
 interface has no tangible benefits.
 
-- Stage 2: serialization and deserialization classes.
-    - `io_status.hpp`
-    - `buffer_state.hpp`
-    - `mnist::context`?
-    - `mnist::context.hpp`
-    - `mnist::error_state.hpp` `(aliased to std::vector<log_record>)`
-    - `mnist::input_state`
-    - `mnist::log_record.hpp`
+- Stage 2: IO state facilities.
+    - `mnist::context`
+    - MNIST IO functions.
 
 - Stage 3: MNIST and tuple support.
-    - Implement `mnist::header_reader.hpp`.
-    - Implement `mnist::deserializer.hpp`.
+    - `mnist::header_reader.hpp`.
+    - `mnist::deserializer.hpp`.
     - Test both of the above.
-    - Implement `dsa::header_reader.hpp`.
-    - Implement `dsa::deserializer.hpp`.
+    - `dsa::input_state`.
+    - `dsa::header_reader.hpp`.
+    - `dsa::deserializer.hpp`.
     - Test both of the above.
-    - Implement `dsa::header_writer.hpp`.
-    - Implement `dsa::header_deserializer.hpp`.
+    - `dsa::header_writer.hpp`.
+    - `dsa::header_deserializer.hpp`.
     - Test both of the above.
 
 - MNIST demo based on LeNet-5.

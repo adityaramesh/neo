@@ -39,15 +39,13 @@ public:
 	const Record& record(size_type n) const
 	{ return m_records[n]; }
 
-	void add_record(const Record& r)
-	{ m_records.push_back(r); }
-
-	void add_record(Record&& r)
-	{ m_records.push_back(std::move(r)); }
-
 	template <class... Args>
-	void emplace_record(Args&&... args)
+	void push_record(Args&&... args)
 	{ m_records.emplace_back(std::forward<Args>(args)...); }
+
+	/*
+	** TODO `pop_record`
+	*/
 };
 
 }

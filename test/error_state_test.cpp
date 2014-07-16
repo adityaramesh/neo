@@ -1,5 +1,5 @@
 /*
-** File Name: log_record_test.cpp
+** File Name: error_state_test.cpp
 ** Author:    Aditya Ramesh
 ** Date:      07/14/2014
 ** Contact:   _@adityaramesh.com
@@ -12,7 +12,7 @@
 module("test log record")
 {
 	using namespace neo;
-	using record = log_record<with_severity, with_message>;
+	using record = basic_log_record<with_severity, with_message>;
 	auto r = record{severity::info, "This is a test."};
 	cc::println(r);
 }
@@ -20,11 +20,11 @@ module("test log record")
 module("test error state")
 {
 	using namespace neo;
-	using record = log_record<with_severity, with_message>;
+	using record = basic_log_record<with_severity, with_message>;
 	using state = error_state<record>;
 
 	auto s = state{};
-	s.emplace_record(severity::info, "This is a test.");
+	s.push_record(severity::info, "This is a test.");
 }
 
-suite("Tests the core logging utilities.")
+suite("Tests the core logging facilities.")

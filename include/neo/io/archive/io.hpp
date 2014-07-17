@@ -19,7 +19,6 @@ namespace archive {
 ** Verifies that a given component of the element type described in the header
 ** matches the corresponding component of the input type.
 */
-
 template <uint8_t Index, class T>
 struct verify_component;
 
@@ -27,22 +26,22 @@ template <uint8_t Index, class Scalar>
 struct verify_component
 {
 	static_assert(std::is_arithmetic<Scalar>::value, "Type must be arithmetic.");
+	static constexpr auto component_size = 2;
 
-	static boost::optional<std::tuple<const uint8_t*, size_t>>
-	apply(
-		const uint8_t* buf,
-		std::size_t rem_buf_size,
+	static void apply(
+		const uint8_t*& buf,
+		std::size_t& rem_buf_size,
 		input_state& is,
 		error_state& es
 	)
 	{
-		if (rem_buf_size < 2) {
+		if (rem_buf_size < component_size) {
 			es.push_record(
 				severity::critical,
 				context{offset_type{0}, Index},
 				"Unexpected end of header."
 			);
-			return boost::none;
+			return;
 		}
 		if (scalar_code<Scalar>::value != buf[0]) {
 			es.push_record(
@@ -50,57 +49,55 @@ struct verify_component
 				context{offset_type{0}, Index},
 				"Mismatching scalar types."
 			);
-			return boost::none;
 		}
-		if (buf[1] != 0) {
+		if (cur_buf[1] != 0) {
 			es.push_record(
 				severity::critical,
 				context{offset_type{0}, Index},
 				"Scalar component should have dimension zero."
 			);
-			return boost::none;
 		}
-		return std::make_tuple(buf + 2, rem_buf_size - 2);
+		cur_buf += component_size;
+		rem_buf_size -= component_size;
 	}
 };
 
 template <uint8_t Index, class Scalar, std::size_t Size>
 struct verify_component<Index, vector<Scalar, Size>>
 {
-	static boost::optional<std::tuple<const uint8_t*, size_t>>
-	apply(
-		const uint8_t* buf,
-		std::size_t rem_buf_size,
+	static constexpr auto component_size = 6;
+
+	static void apply(
+		const uint8_t*& cur_buf,
+		std::size_t rem_buf_size&,
 		input_state& is,
 		error_state& es
 	)
 	{
-		if (rem_buf_size < 6) {
+		if (rem_buf_size < component_size) {
 			es.push_record(
 				severity::critical,
 				context{offset_type{0}, Index},
 				"Unexpected end of header."
 			);
-			return boost::none;
+			return;
 		}
-		if (scalar_code<Scalar>::value != buf[0]) {
+		if (scalar_code<Scalar>::value != cur_buf[0]) {
 			es.push_record(
 				severity::critical,
 				context{offset_type{0}, Index},
 				"Mismatching scalar types."
 			);
-			return boost::none;
 		}
-		if (buf[1] != 1) {
+		if (cur_buf[1] != 1) {
 			es.push_record(
 				severity::critical,
 				context{offset_type{0}, Index},
 				"Vector component should have dimension one."
 			);
-			return boost::none;
 		}
 
-		auto size = *(uint32_t*)(buf + 2);
+		auto size = *(uint32_t*)(cur_buf + 2);
 		if (is.flip_integers()) {
 			s = cc::bswap(s);
 		}
@@ -110,9 +107,9 @@ struct verify_component<Index, vector<Scalar, Size>>
 				context{offset_type{0}, Index},
 				"Mismatching vector sizes."
 			);
-			return boost::none;
 		}
-		return std::make_tuple(buf + 6, rem_buf_size - 6);
+		cur_buf += component_size;
+		rem_buf_size -= component_size;
 	}
 };
 
@@ -124,37 +121,65 @@ template <
 >
 struct verify_component<matrix<Scalar, Rows, Cols, Order>>
 {
-	static std::tuple<const uint8_t*, std::size_t>
-	apply(const uint8_t* p, const std::size_t rem, const bool flip, bool& trans)
+	static constexpr auto component_size = 11;
+
+	static void apply(
+		const uint8_t*& cur_buf,
+		std::size_t rem_buf_size&,
+		input_state& is,
+		error_state& es
+	)
 	{
-		if (rem < 11) {
-			throw std::runtime_error{"Unexpected end of file."};
+		if (rem_buf_size < component_size) {
+			es.push_record(
+				severity::critical,
+				context{offset_type{0}, Index},
+				"Unexpected end of header."
+			);
+			return;
 		}
-		if (scalar_code<Scalar>::value != p[0]) {
-			throw std::runtime_error{"Mismatching scalar type."};
+		if (scalar_code<Scalar>::value != cur_buf[0]) {
+			es.push_record(
+				severity::critical,
+				context{offset_type{0}, Index},
+				"Mismatching scalar types."
+			);
 		}
-		if (p[1] != 2) {
-			throw std::runtime_error{"Expected dimension two."};
+		if (cur_buf[1] != 2) {
+			es.push_record(
+				severity::critical,
+				context{offset_type{0}, Index},
+				"Matrix component should have dimension two."
+			);
 		}
 
 		auto o = static_cast<storage_order>(p[2]);
-		trans = o != Order;
+		is.transpose_matrix(/*XXX matrix index goes here*/, o != Order);
 
-		auto r = *(uint32_t*)(p + 3);
-		auto c = *(uint32_t*)(p + 7);
+		auto rows = *(uint32_t*)(cur_buf + 3);
+		auto cols = *(uint32_t*)(cur_buf + 7);
 
-		if (flip) {
-			r = cc::bswap(r);
-			c = cc::bswap(c);
+		if (is.flip_integers()) {
+			rows = cc::bswap(rows);
+			cols = cc::bswap(cols);
 		}
 
-		if (r != Rows) {
-			throw std::runtime_error{"Mismatching row count."};
+		if (rows != Rows) {
+			es.push_record(
+				severity::critical,
+				context{offset_type{0}, Index},
+				"Mismatching row counts."
+			);
 		}
-		if (c != Cols) {
-			throw std::runtime_error{"Mismatching column count."};
+		if (cols != Cols) {
+			es.push_record(
+				severity::critical,
+				context{offset_type{0}, Index},
+				"Mismatching column counts."
+			);
 		}
-		return std::make_tuple(p + 11, rem - 11);
+		cur_buf += component_size;
+		rem_buf_size -= component_size;
 	}
 };
 
@@ -162,7 +187,6 @@ struct verify_component<matrix<Scalar, Rows, Cols, Order>>
 ** Verifies that each component of the element type described in the header
 ** matches the corresponding component of the input type.
 */
-
 template <
 	std::size_t Current, std::size_t Max,
 	std::size_t PassedMatrices, std::size_t Matrices,
@@ -250,7 +274,6 @@ struct verify_header_impl<Max, Max, Matrices, Matrices>
 ** Verifies that the element type described in the header of the file
 ** corresponds to the given input type.
 */
-
 template <class InputType, std::size_t Matrices>
 struct verify_header
 {
@@ -337,7 +360,7 @@ read_header(
 		es.push_record(
 			severity::critical,
 			context{offset_type{0}, 0},
-			"Mismatching element extents."
+			"Mismatching component extents."
 		);
 		return operation_status::failure |
 			operation_status::fatal_error;
@@ -350,6 +373,8 @@ read_header(
 	static constexpr auto component_info_offset = 3;
 	static constexpr auto elem_count_size = 8;
 
+	using verify_header = detail::verify_header<InputType>;
+
 	// TODO define the type alias for verify_header
 	verify_header::apply(
 		buf + component_info_offset, 
@@ -359,7 +384,14 @@ read_header(
 
 	is.element_count(*(uint64_t*)(buf + is.header_size() -
 		elem_count_size));
-	return operation_status::success;
+
+	if (es.record_count(severity::critical) == 0) {
+		return operation_status::success;
+	}
+	else {
+		return operation_status::failure |
+			operation_status::fatal_error;
+	}
 }
 
 }}

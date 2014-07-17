@@ -25,20 +25,18 @@ performing the IO, then we need to replace `vector` with a SPSC/SPMC queue.
 cost of using CRTP everywhere to force the relevant classes to obey the
 interface has no tangible benefits.
 
-- Stage 2: IO state facilities.
-    - MNIST IO functions.
+- **Note:** it is the responsibility of the IO agent to deal with premature EOF
+errors.
 
 - Stage 3: MNIST and tuple support.
-    - `mnist::header_reader.hpp`.
-    - `mnist::deserializer.hpp`.
+    - Test MNIST IO.
+    - `dsa/io_state.hpp`.
+    - `dsa/definitions.hpp`.
+    - `dsa/io.hpp`.
     - Test both of the above.
-    - `dsa::input_state`.
-    - `dsa::header_reader.hpp`.
-    - `dsa::deserializer.hpp`.
-    - Test both of the above.
-    - `dsa::header_writer.hpp`.
-    - `dsa::header_deserializer.hpp`.
-    - Test both of the above.
+
+- Stage 4: Flow graph support.
+    - ...
 
 - MNIST demo based on LeNet-5.
 - MNIST demo with more of the latest NN techniques, e.g.:

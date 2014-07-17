@@ -38,14 +38,6 @@ DEFINE_ENUM_BITWISE_OPERATORS(byte_order)
 	#error "Unsupported platform integer byte order."
 #endif
 
-constexpr byte_order
-integer_byte_order(const byte_order& o)
-{ return o & byte_order::integer_mask; }
-
-constexpr byte_order
-float_byte_order(const byte_order& o)
-{ return o & byte_order::float_mask; }
-
 }}
 
 #endif

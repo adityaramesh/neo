@@ -9,7 +9,7 @@
 #define Z6191EFDA_D65C_4622_9870_C1A827D996D8
 
 #include <cstdint>
-#include <neo/core/bitmask_enum.hpp>
+#include <neo/utility/bitmask_enum.hpp>
 
 namespace neo {
 namespace archive {

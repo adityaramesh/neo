@@ -51,8 +51,8 @@ private:
 	value_type m_ref{nullptr};
 public:
 	explicit image_io_state() noexcept {}
-	constexpr size_t header_size() const { return hdr_size; }
-	constexpr size_t element_size() const { return img_size; }
+	size_t header_size() const { return hdr_size; }
+	size_t element_size() const { return img_size; }
 	DEFINE_REF_GETTER_SETTER(image_io_state, element, m_ref)
 };
 
@@ -62,8 +62,8 @@ class label_io_state : public array_state_base<label_io_state, offset_type>
 	uint8_t m_val{};
 public:
 	explicit label_io_state() noexcept {}
-	constexpr size_t header_size() const { return hdr_size; }
-	constexpr size_t element_size() const { return 1; }
+	size_t header_size() const { return hdr_size; }
+	size_t element_size() const { return 1; }
 	DEFINE_COPY_GETTER_SETTER(label_io_state, element, m_val)
 };
 

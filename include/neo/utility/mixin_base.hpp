@@ -28,9 +28,9 @@ namespace neo {
 class mixin_core_access
 {
 public:
-	template <class Derived>
+	template <class T>
 	static constexpr const char* name()
-	{ return Derived::name; }
+	{ return T::name; }
 };
 
 template <class Derived, class... Mixins>
@@ -119,7 +119,9 @@ struct print_mixin_base<T, Ts...>
 		const unary_mixin_base<Derived, Mixins...>& r
 	)
 	{
-		os << " * " << static_cast<const T&>(r) << "\n";
+		cc::write(os, "\"$\": ", mixin_core_access::name<T>());
+		print_data(os, static_cast<const T&>(r));
+		cc::write(os, ", ");
 		print_mixin_base<Ts...>::apply(os, r);
 	}
 };
@@ -133,7 +135,9 @@ struct print_mixin_base<T>
 		const unary_mixin_base<Derived, Mixins...>& r
 	)
 	{
-		os << " * " << static_cast<const T&>(r);
+		cc::write(os, "\"$\": ", mixin_core_access::name<T>());
+		print_data(os, static_cast<const T&>(r));
+		cc::write(os, "}}");
 	}
 };
 
@@ -145,7 +149,7 @@ std::ostream& operator<<(
 	const unary_mixin_base<Derived, Mixins...>& r
 )
 {
-	cc::writeln(os, "$:", mixin_core_access::name<Derived>());
+	cc::write(os, "\"$\": {{", mixin_core_access::name<Derived>());
 	detail::print_mixin_base<Mixins...>::apply(os, r);
 	return os;
 }

@@ -39,7 +39,7 @@ class basic_log_record : public unary_mixin_base<
 	unary_mixin_base<basic_log_record<Mixins...>, Mixins...>;
 
 	friend class mixin_core_access;
-	constexpr static auto name = "Log record";
+	constexpr static auto name = "log record";
 public:
 	explicit basic_log_record() noexcept {}
 
@@ -54,6 +54,9 @@ constexpr const char* basic_log_record<Mixins...>::name;
 class with_message
 {
 	std::string m_msg{};
+
+	friend class mixin_core_access;
+	constexpr static auto name = "message";
 public:
 	explicit with_message() noexcept {}
 
@@ -64,12 +67,15 @@ public:
 	DEFINE_REF_GETTER_SETTER(with_message, message, m_msg)
 };
 
-std::ostream& operator<<(std::ostream& os, const with_message& m)
-{ return os << "Message: " << m.message(); }
+void print_data(std::ostream& os, const with_message& m)
+{ os << "\"" << m.message() << "\""; }
 
 class with_severity
 {
 	severity m_sev{};
+
+	friend class mixin_core_access;
+	constexpr static auto name = "severity";
 public:
 	explicit with_severity() noexcept {}
 	
@@ -79,13 +85,16 @@ public:
 	DEFINE_COPY_GETTER_SETTER(with_severity, severity, m_sev)
 };
 
-std::ostream& operator<<(std::ostream& os, const with_severity& s)
-{ return os << "Severity: " << s.severity(); }
+void print_data(std::ostream& os, const with_severity& s)
+{ os << s.severity(); }
 
 template <class Code>
 class with_code
 {
 	Code m_code;
+
+	friend class mixin_core_access;
+	constexpr static auto name = "code";
 public:
 	explicit with_code() noexcept {}
 
@@ -96,13 +105,16 @@ public:
 };
 
 template <class Code>
-std::ostream& operator<<(std::ostream& os, const with_code<Code>& s)
-{ return os << "Code: " << s.code(); }
+void print_data(std::ostream& os, const with_code<Code>& s)
+{ os << s.code(); }
 
 template <class Context>
 class with_context
 {
 	Context m_ctx;
+
+	friend class mixin_core_access;
+	constexpr static auto name = "context";
 public:
 	explicit with_context() noexcept {}
 
@@ -114,8 +126,8 @@ public:
 };
 
 template <class Context>
-std::ostream& operator<<(std::ostream& os, const with_context<Context>& s)
-{ return os << "Context: " << s.context(); }
+void print_data(std::ostream& os, const with_context<Context>& s)
+{ os << s.context(); }
 
 }
 

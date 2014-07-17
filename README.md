@@ -29,6 +29,12 @@ interface has no tangible benefits.
 errors.
 
 - Stage 3: archive support.
+    - Note: when verifying the archive header, use the record count function of
+    the error state class to check whether the parsing succeeded.
+    - How to deal with changing buffer offset and ensuring that constraints are
+    still met after each element in the buffer is processed?
+    - Create header with `deserialize`, `serialize`, `from_string`, and
+    `to_string` functions for useful primitive types.
     - Revise the following headers:
         - `archive/sink.hpp`.
 	- `archive/source.hpp`.

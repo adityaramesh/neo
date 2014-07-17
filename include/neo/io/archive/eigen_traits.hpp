@@ -9,8 +9,8 @@
 #define Z07E9F626_6843_4B92_9468_80CD886A8586
 
 #include <type_traits>
-#include <neo/utility/archive/tensor.hpp>
-#include <neo/utility/archive/storage_order.hpp>
+#include <neo/io/archive/tensor.hpp>
+#include <neo/io/archive/storage_order.hpp>
 #include <Eigen/Core>
 
 namespace neo {
@@ -145,7 +145,8 @@ struct is_plain_object<Eigen::Map<T>>
 template <class T>
 struct eigen_matrix_traits
 {
-	static_assert(is_eigen_matrix<T>::value, "Type derive from Eigen::MatrixBase.");
+	static_assert(is_eigen_matrix<T>::value,
+		"Type must derive from Eigen::MatrixBase.");
 
 	using scalar = typename Eigen::internal::traits<T>::Scalar;
 	static constexpr auto rows = T::RowsAtCompileTime;

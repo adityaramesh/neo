@@ -8,6 +8,7 @@
 #ifndef ZEF4C5231_1876_4C70_A554_ADA3CB8EA942
 #define ZEF4C5231_1876_4C70_A554_ADA3CB8EA942
 
+#include <array>
 #include <utility>
 #include <vector>
 #include <boost/range/iterator_range.hpp>
@@ -22,6 +23,7 @@ class basic_error_state
 	using iterator = typename record_list::const_iterator;
 	using range = boost::iterator_range<iterator>;
 
+	std::array<size_t, 5> m_rec_counts{};
 	record_list m_records{};
 public:
 	explicit basic_error_state() {}
@@ -33,15 +35,35 @@ public:
 		);
 	}
 
-	const size_type record_count() const
+	size_type record_count() const
 	{ return m_records.size(); }
+
+	size_type record_count(severity s) const
+	{
+		switch (s) {
+		case severity::debug:    return m_rec_counts[0];
+		case severity::info:     return m_rec_counts[1];
+		case severity::warning:  return m_rec_counts[2];
+		case severity::error:    return m_rec_counts[3];
+		case severity::critical: return m_rec_counts[4];
+		}
+	}
 
 	const Record& record(size_type n) const
 	{ return m_records[n]; }
 
 	template <class... Args>
-	void push_record(Args&&... args)
-	{ m_records.emplace_back(std::forward<Args>(args)...); }
+	void push_record(severity s, Args&&... args)
+	{
+		switch (s) {
+		case severity::debug:    ++m_rec_counts[0]; break;
+		case severity::info:     ++m_rec_counts[1]; break;
+		case severity::warning:  ++m_rec_counts[2]; break;
+		case severity::error:    ++m_rec_counts[3]; break;
+		case severity::critical: ++m_rec_counts[4]; break;
+		}
+		m_records.emplace_back(s, std::forward<Args>(args)...);
+	}
 
 	/*
 	** TODO `pop_record`

@@ -37,6 +37,9 @@ template <class SizeType>
 class with_line
 {
 	SizeType m_line;
+
+	friend class mixin_core_access;
+	constexpr static auto name = "line";
 public:
 	explicit with_line() noexcept {}
 
@@ -47,13 +50,16 @@ public:
 };
 
 template <class SizeType>
-std::ostream& operator<<(std::ostream& os, const with_line<SizeType>& s)
-{ return os << "Line: " << s.line(); }
+void print_data(std::ostream& os, const with_line<SizeType>& s)
+{ os << s.line(); }
 
 template <class SizeType>
 class with_column
 {
 	SizeType m_col;
+
+	friend class mixin_core_access;
+	constexpr static auto name = "column";
 public:
 	explicit with_column() noexcept {}
 
@@ -64,13 +70,16 @@ public:
 };
 
 template <class SizeType>
-std::ostream& operator<<(std::ostream& os, const with_column<SizeType>& s)
-{ return os << "Column: " << s.column(); }
+void print_data(std::ostream& os, const with_column<SizeType>& s)
+{ os << s.column(); }
 
 template <class SizeType>
 class with_element
 {
 	SizeType m_elem;
+
+	friend class mixin_core_access;
+	constexpr static auto name = "element";
 public:
 	explicit with_element() noexcept {}
 
@@ -81,13 +90,16 @@ public:
 };
 
 template <class SizeType>
-std::ostream& operator<<(std::ostream& os, const with_element<SizeType>& s)
-{ return os << "Element: " << s.element(); }
+void print_data(std::ostream& os, const with_element<SizeType>& s)
+{ os << s.element(); }
 
 template <class SizeType>
 class with_component
 {
 	SizeType m_comp;
+
+	friend class mixin_core_access;
+	constexpr static auto name = "component";
 public:
 	explicit with_component() noexcept {}
 
@@ -98,12 +110,15 @@ public:
 };
 
 template <class SizeType>
-std::ostream& operator<<(std::ostream& os, const with_component<SizeType>& s)
-{ return os << "Component: " << s.component(); }
+void print_data(std::ostream& os, const with_component<SizeType>& s)
+{ os << s.component(); }
 
 class with_offset
 {
 	off_t m_off;
+
+	friend class mixin_core_access;
+	constexpr static auto name = "offset";
 public:
 	explicit with_offset() noexcept {}
 
@@ -113,8 +128,8 @@ public:
 	DEFINE_COPY_GETTER_SETTER(with_offset, offset, m_off)
 };
 
-std::ostream& operator<<(std::ostream& os, const with_offset& s)
-{ return os << "Offset: " << s.offset(); }
+void print_data(std::ostream& os, const with_offset& s)
+{ os << s.offset(); }
 
 }
 

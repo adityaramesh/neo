@@ -71,14 +71,14 @@ module("test deserialization")
 	auto s = archive::read_header(buf.data(), buf.size(), is, bs, es);
 	require(!!(s & operation_status::success));
 
-	/*
 	s = archive::deserialize(
 		buf.data() + bs.consumed(),
-		buf.size() + bs.consumed(),
+		buf.size() - bs.consumed(),
 		is, bs, es
 	);
 	require(!!(s & operation_status::success));
 
+	/*
 	auto m = is.element();
 	cc::println(m);
 	*/

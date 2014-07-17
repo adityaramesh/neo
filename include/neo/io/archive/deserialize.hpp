@@ -111,7 +111,7 @@ struct process_component<Index, MatrixIndex, matrix<Scalar, Rows, Cols, Order>>
 		if (is.transpose_matrix(MatrixIndex)) {
 			auto t = transposed_type{(Scalar*)buf};
 			t.transpose().eval();
-			::new (&std::get<Index>(is.element())) output_type{t};
+			::new (&std::get<Index>(is.element())) output_type{t.data()};
 		}
 		else {
 			::new (&std::get<Index>(is.element())) output_type{(Scalar*)buf};
@@ -249,6 +249,7 @@ deserialize(
 	detail::process_element<SerializedType, matrices>;
 
 	helper::apply(buf, is, es);
+	return operation_status::success;
 }
 
 }}

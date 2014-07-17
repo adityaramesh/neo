@@ -34,7 +34,7 @@ module("test read")
 
 	s = mnist::deserialize(
 		buf.data() + bs.consumed(),
-		buf.size() + bs.consumed(),
+		buf.size() - bs.consumed(),
 		is, bs, es
 	);
 	require(!!(s & operation_status::success));

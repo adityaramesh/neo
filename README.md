@@ -28,20 +28,21 @@ interface has no tangible benefits.
 - **Note:** it is the responsibility of the IO agent to deal with premature EOF
 errors.
 
+- Create header with `deserialize`, `serialize`, `from_string`, and `to_string`
+functions for useful primitive types.
+
 - Stage 3: archive support.
-    - Note: when verifying the archive header, use the record count function of
-    the error state class to check whether the parsing succeeded.
+    - **Note:** when deserializing, update the tuple stored within the io_state
+    instead of returning a value from the process_component function.
     - How to deal with changing buffer offset and ensuring that constraints are
     still met after each element in the buffer is processed?
-    - Create header with `deserialize`, `serialize`, `from_string`, and
-    `to_string` functions for useful primitive types.
-    - Revise the following headers:
-        - `archive/sink.hpp`.
-	- `archive/source.hpp`.
-    - `archive/definitions.hpp`.
-    - `archive/io_state.hpp`.
+    - `archive/deserialize.hpp`.
+    - Test the above.
+    - `archive/write_header.hpp`.
+    - Test the above.
+    - `archive/serialize.hpp`.
+    - Test the above.
     - `archive/io.hpp`.
-    - Test both of the above.
 
 - Stage 4: Flow graph support.
     - ...

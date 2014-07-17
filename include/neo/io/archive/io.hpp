@@ -10,28 +10,31 @@
 
 #include <cassert>
 #include <type_traits>
+#include <neo/core/operation_status.hpp>
 #include <neo/io/archive/definitions.hpp>
 
 namespace neo {
 namespace archive {
+namespace detail {
 
 /*
 ** Verifies that a given component of the element type described in the header
 ** matches the corresponding component of the input type.
 */
-template <uint8_t Index, class T>
+template <uint8_t Index, uint8_t MatrixIndex, class T>
 struct verify_component;
 
-template <uint8_t Index, class Scalar>
+template <uint8_t Index, uint8_t MatrixIndex, class Scalar>
 struct verify_component
 {
 	static_assert(std::is_arithmetic<Scalar>::value, "Type must be arithmetic.");
 	static constexpr auto component_size = 2;
 
-	static void apply(
-		const uint8_t*& buf,
-		std::size_t& rem_buf_size,
-		input_state& is,
+	template <class SerializedType>
+	static bool apply(
+		const uint8_t*& cur_buf,
+		size_t& rem_buf_size,
+		io_state<SerializedType>&,
 		error_state& es
 	)
 	{
@@ -41,9 +44,9 @@ struct verify_component
 				context{offset_type{0}, Index},
 				"Unexpected end of header."
 			);
-			return;
+			return false;
 		}
-		if (scalar_code<Scalar>::value != buf[0]) {
+		if (scalar_code<Scalar>::value != cur_buf[0]) {
 			es.push_record(
 				severity::critical,
 				context{offset_type{0}, Index},
@@ -57,20 +60,23 @@ struct verify_component
 				"Scalar component should have dimension zero."
 			);
 		}
+
 		cur_buf += component_size;
 		rem_buf_size -= component_size;
+		return true;
 	}
 };
 
-template <uint8_t Index, class Scalar, std::size_t Size>
-struct verify_component<Index, vector<Scalar, Size>>
+template <uint8_t Index, uint8_t MatrixIndex, class Scalar, size_t Size>
+struct verify_component<Index, MatrixIndex, vector<Scalar, Size>>
 {
 	static constexpr auto component_size = 6;
 
-	static void apply(
+	template <class SerializedType>
+	static bool apply(
 		const uint8_t*& cur_buf,
-		std::size_t rem_buf_size&,
-		input_state& is,
+		size_t& rem_buf_size,
+		io_state<SerializedType>& is,
 		error_state& es
 	)
 	{
@@ -80,7 +86,7 @@ struct verify_component<Index, vector<Scalar, Size>>
 				context{offset_type{0}, Index},
 				"Unexpected end of header."
 			);
-			return;
+			return false;
 		}
 		if (scalar_code<Scalar>::value != cur_buf[0]) {
 			es.push_record(
@@ -99,34 +105,39 @@ struct verify_component<Index, vector<Scalar, Size>>
 
 		auto size = *(uint32_t*)(cur_buf + 2);
 		if (is.flip_integers()) {
-			s = cc::bswap(s);
+			size = cc::bswap(size);
 		}
-		if (s != Size) {
+		if (size != Size) {
 			es.push_record(
 				severity::critical,
 				context{offset_type{0}, Index},
 				"Mismatching vector sizes."
 			);
 		}
+
 		cur_buf += component_size;
 		rem_buf_size -= component_size;
+		return true;
 	}
 };
 
 template <
+	uint8_t Index,
+	uint8_t MatrixIndex,
 	class Scalar,
-	std::size_t Rows,
-	std::size_t Cols,
+	size_t Rows,
+	size_t Cols,
 	storage_order Order
 >
-struct verify_component<matrix<Scalar, Rows, Cols, Order>>
+struct verify_component<Index, MatrixIndex, matrix<Scalar, Rows, Cols, Order>>
 {
 	static constexpr auto component_size = 11;
 
-	static void apply(
+	template <class SerializedType>
+	static bool apply(
 		const uint8_t*& cur_buf,
-		std::size_t rem_buf_size&,
-		input_state& is,
+		size_t& rem_buf_size,
+		io_state<SerializedType>& is,
 		error_state& es
 	)
 	{
@@ -136,7 +147,7 @@ struct verify_component<matrix<Scalar, Rows, Cols, Order>>
 				context{offset_type{0}, Index},
 				"Unexpected end of header."
 			);
-			return;
+			return false;
 		}
 		if (scalar_code<Scalar>::value != cur_buf[0]) {
 			es.push_record(
@@ -153,8 +164,8 @@ struct verify_component<matrix<Scalar, Rows, Cols, Order>>
 			);
 		}
 
-		auto o = static_cast<storage_order>(p[2]);
-		is.transpose_matrix(/*XXX matrix index goes here*/, o != Order);
+		auto o = static_cast<storage_order>(cur_buf[2]);
+		is.transpose_matrix(MatrixIndex, o != Order);
 
 		auto rows = *(uint32_t*)(cur_buf + 3);
 		auto cols = *(uint32_t*)(cur_buf + 7);
@@ -178,8 +189,10 @@ struct verify_component<matrix<Scalar, Rows, Cols, Order>>
 				"Mismatching column counts."
 			);
 		}
+
 		cur_buf += component_size;
 		rem_buf_size -= component_size;
+		return true;
 	}
 };
 
@@ -188,20 +201,15 @@ struct verify_component<matrix<Scalar, Rows, Cols, Order>>
 ** matches the corresponding component of the input type.
 */
 template <
-	std::size_t Current, std::size_t Max,
-	std::size_t PassedMatrices, std::size_t Matrices,
+	size_t Current, size_t Max,
+	size_t PassedMatrices, size_t Matrices,
 	class... Ts
 >
 struct verify_header_impl;
 
-/*
-** This is the specialization in the case that the current type `T` is not a
-** matrix. In this case, we do not have to pass a reference to the corresponding
-** element of the `trans` array to the helper function.
-*/
 template <
-	std::size_t Current, std::size_t Max,
-	std::size_t PassedMatrices, std::size_t Matrices,
+	size_t Current, size_t Max,
+	size_t PassedMatrices, size_t Matrices,
 	class T, class... Ts
 >
 struct verify_header_impl<Current, Max, PassedMatrices, Matrices, T, Ts...>
@@ -209,29 +217,32 @@ struct verify_header_impl<Current, Max, PassedMatrices, Matrices, T, Ts...>
 	using next = verify_header_impl<
 		Current + 1, Max, PassedMatrices, Matrices, Ts...
 	>;
+	using helper = verify_component<Current, PassedMatrices, T>;
 
+	template <class SerializedType>
 	static void
 	apply(
-		const uint8_t* p,
-		const std::size_t hdr_size,
-		const bool flip,
-		std::array<bool, Matrices>& trans
+		const uint8_t* cur_buf,
+		size_t rem_buf_size,
+		io_state<SerializedType>& is,
+		error_state& es
 	)
 	{
-		auto t = verify_component<T>::apply(p, hdr_size, flip);
-		next::apply(std::get<0>(t), std::get<1>(t), flip, trans);
+		if (!helper::apply(cur_buf, rem_buf_size, is, es)) {
+			return;
+		}
+		next::apply(cur_buf, rem_buf_size, is, es);
 	}
 };
 
 /*
 ** This is the specialization for the case that the current type `T` is a
-** matrix. In this case, we do have to pass a reference to the corresponding
-** element of the `trans` array to the helper function.
+** matrix. In this case, we need to increment the number of passed matrices.
 */
 template <
-	std::size_t Current, std::size_t Max,
-	std::size_t PassedMatrices, std::size_t Matrices,
-	class Scalar, std::size_t Rows, std::size_t Cols, storage_order Order,
+	size_t Current, size_t Max,
+	size_t PassedMatrices, size_t Matrices,
+	class Scalar, size_t Rows, size_t Cols, storage_order Order,
 	class... Ts
 >
 struct verify_header_impl<
@@ -243,91 +254,89 @@ struct verify_header_impl<
 	using next = verify_header_impl<
 		Current + 1, Max, PassedMatrices + 1, Matrices, Ts...
 	>;
+	using helper = verify_component<Current, PassedMatrices, input_type>;
 
+	template <class SerializedType>
 	static void
 	apply(
-		const uint8_t* p,
-		const std::size_t hdr_size,
-		const bool flip,
-		std::array<bool, Matrices>& trans
+		const uint8_t* cur_buf,
+		size_t rem_buf_size,
+		io_state<SerializedType>& is,
+		error_state& es
 	)
 	{
-		auto t = verify_component<input_type>::apply(
-			p, hdr_size, flip, trans[PassedMatrices]);
-		next::apply(std::get<0>(t), std::get<1>(t), flip, trans);
+		if (!helper::apply(cur_buf, rem_buf_size, is, es)) {
+			return;
+		}
+		next::apply(cur_buf, rem_buf_size, is, es);
 	}
 };
 
-template <std::size_t Max, std::size_t Matrices>
+template <size_t Max, size_t Matrices>
 struct verify_header_impl<Max, Max, Matrices, Matrices>
 {
+	template <class SerializedType>
 	static void
-	apply(
-		const uint8_t*,
-		const std::size_t,
-		const bool,
-		std::array<bool, Matrices>&
-	) {}
+	apply(const uint8_t*, size_t, io_state<SerializedType>&, error_state&) {}
 };
 
 /*
 ** Verifies that the element type described in the header of the file
 ** corresponds to the given input type.
 */
-template <class InputType, std::size_t Matrices>
+template <class InputType, size_t Matrices>
 struct verify_header
 {
+	using helper = verify_component<0, 0, InputType>;
+
+	template <class SerializedType>
 	static void
 	apply(
 		const uint8_t* buf,
-		std::size_t buf_size,
-		input_state& is,
+		size_t buf_size,
+		io_state<SerializedType>& is,
 		error_state& es
-	{
-		verify_component<0, InputType>(buf, buf_size, is, es);
-	}
+	) { helper::apply(buf, buf_size, is, es); }
 };
 
 template <
 	class Scalar,
-	std::size_t Rows,
-	std::size_t Cols,
+	size_t Rows,
+	size_t Cols,
 	storage_order Order,
-	std::size_t Matrices
+	size_t Matrices
 >
 struct verify_header<matrix<Scalar, Rows, Cols, Order>, Matrices>
 {
 	using input_type = matrix<Scalar, Rows, Cols, Order>;
-	using helper = verify_component<0, input_type>;
+	using helper = verify_component<0, 0, input_type>;
 
+	template <class SerializedType>
 	static void
 	apply(
 		const uint8_t* buf,
-		std::size_t buf_size,
-		input_state& is,
+		size_t buf_size,
+		io_state<SerializedType>& is,
 		error_state& es
-	)
-	{
-		helper::apply(buf, buf_size, is, es);
-	}
+	) { helper::apply(buf, buf_size, is, es); }
 };
 
-template <class... Ts, std::size_t Matrices>
+template <class... Ts, size_t Matrices>
 struct verify_header<std::tuple<Ts...>, Matrices>
 {
 	using helper = verify_header_impl<0, sizeof...(Ts), 0, Matrices, Ts...>;
 
+	template <class SerializedType>
 	static void
 	apply(
 		const uint8_t* buf,
-		std::size_t buf_size,
-		input_state& is,
+		size_t buf_size,
+		io_state<SerializedType>& is,
 		error_state& es
-	)
-	{
-		helper::apply(buf, buf_size, is, es);
-	}
+	) { helper::apply(buf, buf_size, is, es); }
 };
+
+}
 
 template <class SerializedType>
 operation_status
@@ -337,13 +346,14 @@ read_header(
 	buffer_state& bs, error_state& es
 ) noexcept
 {
+	(void)n;
 	assert(n >= is.header_size());
 	bs.consumed(is.header_size());
 
 	if (buf[0] > version) {
 		es.push_record(
 			severity::critical,
-			context{offset_type{0}, 0},
+			context{offset_type{0}, uint8_t{0}},
 			"Unsupported archive version."
 		);
 		return operation_status::failure |
@@ -359,7 +369,7 @@ read_header(
 	if (buf[2] != element_extents<SerializedType>::value) {
 		es.push_record(
 			severity::critical,
-			context{offset_type{0}, 0},
+			context{offset_type{0}, uint8_t{0}},
 			"Mismatching component extents."
 		);
 		return operation_status::failure |
@@ -372,11 +382,10 @@ read_header(
 	*/
 	static constexpr auto component_info_offset = 3;
 	static constexpr auto elem_count_size = 8;
+	static constexpr auto matrices = count_matrices<SerializedType>::value;
+	using helper = detail::verify_header<SerializedType, matrices>;
 
-	using verify_header = detail::verify_header<InputType>;
-
-	// TODO define the type alias for verify_header
-	verify_header::apply(
+	helper::apply(
 		buf + component_info_offset, 
 		is.header_size() - component_info_offset,
 		is, es

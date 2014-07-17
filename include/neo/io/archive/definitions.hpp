@@ -46,7 +46,7 @@ buffer_state make_buffer_state() noexcept
 }
 
 template <class SerializedType>
-class io_state
+class io_state : public array_state_base<io_state<SerializedType>, offset_type>
 {
 public:
 	using value_type = eigen_type<SerializedType>;

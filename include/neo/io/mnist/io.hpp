@@ -28,6 +28,8 @@ read_header(
 	assert(n >= is.header_size());
 
 	auto hdr = reinterpret_cast<uint32_t*>(buf);
+	bs.consumed(is.header_size());
+
 	#if PLATFORM_INTEGER_BYTE_ORDER == PLATFORM_BYTE_ORDER_LITTLE
 		if (!(hdr[0] == 0x01080000 || hdr[0] == 0x03080000)) {
 			es.push_record(
@@ -52,7 +54,6 @@ read_header(
 		is.element_count(hdr[1]);
 	#endif
 
-	bs.consumed(is.header_size());
 	return operation_status::success;
 }
 
@@ -66,6 +67,8 @@ read_header(
 	assert(n >= ls.header_size());
 
 	auto hdr = reinterpret_cast<uint32_t*>(buf);
+	bs.consumed(ls.header_size());
+
 	#if PLATFORM_INTEGER_BYTE_ORDER == PLATFORM_BYTE_ORDER_LITTLE
 		if (!(hdr[0] == 0x01080000 || hdr[0] == 0x03080000)) {
 			es.push_record(
@@ -90,7 +93,6 @@ read_header(
 		ls.element_count(hdr[1]);
 	#endif
 
-	bs.consumed(ls.header_size());
 	return operation_status::success;
 }
 

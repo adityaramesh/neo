@@ -28,11 +28,13 @@ interface has no tangible benefits.
 - **Note:** it is the responsibility of the IO agent to deal with premature EOF
 errors.
 
-- Stage 3: MNIST and tuple support.
-    - Test MNIST IO.
-    - `dsa/io_state.hpp`.
-    - `dsa/definitions.hpp`.
-    - `dsa/io.hpp`.
+- Stage 3: archive support.
+    - Revise the following headers:
+        - `archive/sink.hpp`.
+	- `archive/source.hpp`.
+    - `archive/definitions.hpp`.
+    - `archive/io_state.hpp`.
+    - `archive/io.hpp`.
     - Test both of the above.
 
 - Stage 4: Flow graph support.

@@ -31,6 +31,16 @@ module("test read")
 	file::read(h, 0, buf.size(), buf, strat);
 	auto s = mnist::read_header(buf.data(), buf.size(), is, bs, es);
 	require(!!(s & operation_status::success));
+
+	s = mnist::deserialize(
+		buf.data() + bs.consumed(),
+		buf.size() + bs.consumed(),
+		is, bs, es
+	);
+	require(!!(s & operation_status::success));
+
+	auto m = is.element();
+	cc::println(m);
 }
 
 suite("Tests the MNIST IO facilities.")

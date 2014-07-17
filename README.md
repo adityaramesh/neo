@@ -26,7 +26,6 @@ cost of using CRTP everywhere to force the relevant classes to obey the
 interface has no tangible benefits.
 
 - Stage 2: IO state facilities.
-    - `mnist::context`
     - MNIST IO functions.
 
 - Stage 3: MNIST and tuple support.

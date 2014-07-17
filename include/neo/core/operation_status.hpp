@@ -26,6 +26,8 @@
 #ifndef ZA8E5AEB9_8701_4C48_8EA4_DB2078AB3558
 #define ZA8E5AEB9_8701_4C48_8EA4_DB2078AB3558
 
+#include <neo/utility/bitmask_enum.hpp>
+
 namespace neo {
 
 enum class operation_status : unsigned
@@ -38,6 +40,8 @@ enum class operation_status : unsigned
 	req_constr_update  = 0x20,
 	pref_constr_update = 0x40,
 };
+
+DEFINE_ENUM_BITWISE_OPERATORS(operation_status)
 
 }
 

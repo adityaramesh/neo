@@ -1,5 +1,5 @@
 /*
-** File Name: log_record.hpp
+** File Name: basic_log_record.hpp
 ** Author:    Aditya Ramesh
 ** Date:      07/14/2014
 ** Contact:   _@adityaramesh.com

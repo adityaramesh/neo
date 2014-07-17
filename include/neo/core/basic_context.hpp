@@ -1,5 +1,5 @@
 /*
-** File Name: context.hpp
+** File Name: basic_context.hpp
 ** Author:    Aditya Ramesh
 ** Date:      07/15/2014
 ** Contact:   _@adityaramesh.com
@@ -31,7 +31,7 @@ public:
 };
 
 template <class... Mixins>
-constexpr const char* basic_log_record<Mixins...>::name;
+constexpr const char* basic_context<Mixins...>::name;
 
 template <class SizeType>
 class with_line
@@ -107,7 +107,7 @@ class with_offset
 public:
 	explicit with_offset() noexcept {}
 
-	explicit with_offset(SizeType offset) noexcept
+	explicit with_offset(off_t offset) noexcept
 	: m_off{offset} {}
 
 	DEFINE_COPY_GETTER_SETTER(with_offset, offset, m_off)

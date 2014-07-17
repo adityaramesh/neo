@@ -23,8 +23,8 @@ public:
 	explicit buffer_state() noexcept {}
 
 	DEFINE_COPY_GETTER_SETTER(buffer_state, consumed, m_cns) 
-	DEFINE_REF_GETTER(m_req, required_constraints)
-	DEFINE_REF_GETTER(m_pref, preferred_constraints)
+	DEFINE_REF_GETTER(required_constraints, m_req)
+	DEFINE_REF_GETTER(preferred_constraints, m_pref)
 };
 
 }

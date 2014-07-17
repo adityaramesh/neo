@@ -6,8 +6,8 @@
 */
 
 #include <ccbase/unit_test.hpp>
-#include <neo/core/log_record.hpp>
-#include <neo/core/error_state.hpp>
+#include <neo/core/basic_log_record.hpp>
+#include <neo/core/basic_error_state.hpp>
 
 module("test log record")
 {
@@ -21,7 +21,7 @@ module("test error state")
 {
 	using namespace neo;
 	using record = basic_log_record<with_severity, with_message>;
-	using state = error_state<record>;
+	using state = basic_error_state<record>;
 
 	auto s = state{};
 	s.push_record(severity::info, "This is a test.");

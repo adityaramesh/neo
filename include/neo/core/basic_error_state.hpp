@@ -1,5 +1,5 @@
 /*
-** File Name: error_state.hpp
+** File Name: basic_error_state.hpp
 ** Author:    Aditya Ramesh
 ** Date:      07/14/2014
 ** Contact:   _@adityaramesh.com
@@ -15,7 +15,7 @@
 namespace neo {
 
 template <class Record>
-class error_state
+class basic_error_state
 {
 	using record_list = std::vector<Record>;
 	using size_type = typename record_list::size_type;
@@ -24,7 +24,7 @@ class error_state
 
 	record_list m_records{};
 public:
-	explicit error_state() {}
+	explicit basic_error_state() {}
 
 	range records() const
 	{

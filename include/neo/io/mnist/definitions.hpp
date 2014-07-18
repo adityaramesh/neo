@@ -31,7 +31,8 @@ using error_state = basic_error_state<log_record>;
 buffer_state make_image_buffer_state() noexcept
 {
 	auto b = buffer_state{};
-	b.required_constraints().at_least(img_width);
+	b.required_constraints().at_least(img_size);
+	b.preferred_constraints().at_least(img_size);
 	return b;
 }
 

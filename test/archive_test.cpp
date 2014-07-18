@@ -5,6 +5,7 @@
 ** Contact:   _@adityaramesh.com
 */
 
+#include <typeinfo>
 #include <ccbase/format.hpp>
 #include <ccbase/unit_test.hpp>
 #include <neo/core/file.hpp>
@@ -50,10 +51,7 @@ module("test deserialization")
 
 	constexpr auto path = "data/archive/test.dsa";
 	auto strat = file::strategy<io_mode::input>{path};
-	strat.infer_defaults(access_mode::random);
-
-	auto h = file::open<open_mode::read>(path, strat).move();
-	auto buf = file::allocate_ibuffer(h, strat);
+	strat.infer_defaults(access_mode::sequential);
 
 	using n1 = double;
 	using n2 = archive::vector<double, 37>;
@@ -63,25 +61,51 @@ module("test deserialization")
 	using n6 = int32_t;
 	using input_type = std::tuple<n1, n2, n3, n4, n5, n6>;
 
+	auto h = file::open<open_mode::read>(path, strat).move();
 	auto is = archive::io_state<input_type>{};
 	auto es = archive::error_state{};
 	auto bs = archive::make_buffer_state<input_type>();
 	
-	file::read(h, 0, buf.size(), buf, strat);
+	auto bc = *merge_strong(
+		strat.preferred_constraints(io_mode::input),
+		bs.preferred_constraints()
+	);
+	auto buf = file::allocate_ibuffer(h, strat, bc);
+	file::read(h, 0, buf.size(), buf, strat).get();
+
 	auto s = archive::read_header(buf.data(), buf.size(), is, bs, es);
 	require(!!(s & operation_status::success));
+	require(is.element_count() == 3);
 
-	s = archive::deserialize(
-		buf.data() + bs.consumed(),
-		buf.size() - bs.consumed(),
-		is, bs, es
-	);
+	file::read(h, bs.consumed(), buf.size(), buf, strat).get();
+	s = archive::deserialize(buf.data(), buf.size(), is, bs, es);
 	require(!!(s & operation_status::success));
 
-	/*
-	auto m = is.element();
-	cc::println(m);
-	*/
+	auto t = is.element();
+	require(std::get<0>(t) == 1.0);
+	require(std::get<5>(t) == -1);
+
+	auto a2 = std::get<1>(t);
+	auto a3 = std::get<2>(t);
+	auto a4 = std::get<3>(t);
+	auto a5 = std::get<4>(t);
+
+	for (auto i = 0; i != a2.size(); ++i) {
+		require(a2(i) == i);
+	}
+	for (auto i = 0; i != a3.rows(); ++i) {
+		for (auto j = 0; j != a3.cols(); ++j) {
+			require(a3(i, j) == a3.cols() * i + j);
+		}
+	}
+	for (auto j = 0; j != a4.cols(); ++j) {
+		for (auto i = 0; i != a4.rows(); ++i) {
+			require(a4(i, j) == a4.cols() * i + j);
+		}
+	}
+	for (auto i = 0; i != a5.size(); ++i) {
+		require(a5(i) == i);
+	}
 }
 
 suite("Tests the archive IO facilities.")

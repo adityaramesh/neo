@@ -123,7 +123,7 @@ public:
 	** Returns whether this object's constraints are compatible with those
 	** of the given object.
 	*/
-	bool satisfies(const buffer_constraints&);
+	bool satisfies(const buffer_constraints&) const;
 
 	buffer_constraints& at_least(boost::optional<size_t> n)
 	{
@@ -167,7 +167,7 @@ public:
 	}
 };
 
-bool buffer_constraints::satisfies(const buffer_constraints& bc)
+bool buffer_constraints::satisfies(const buffer_constraints& bc) const
 {
 	/*
 	** The first two checks are somewhat redundantly written if we can

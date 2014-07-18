@@ -34,14 +34,14 @@ read(
 	assert(n > 0);
 
 	if (!s.write_method()) {
-		assert(off + n <= s.current_file_size());
+		assert((off_t)(off + n) <= s.current_file_size());
 	}
 	else if (s.maximum_file_size()) {
-		assert(off + n <= s.maximum_file_size());
+		assert((off_t)(off + n) <= s.maximum_file_size());
 	}
 
-	switch (*s.read_method()) {
-	case io_method::mmap:
+	auto r = *s.read_method();
+	if (r == io_method::mmap) {
 		if (b.mapped() && b.map() == h.map()) {
 			b.offset(off);
 		}
@@ -49,14 +49,13 @@ read(
 			assert(b.writable());
 			std::copy_n(h.map() + off, n, b.data());
 		}
-		return true;
-	case io_method::paging:
-	case io_method::direct:
-		assert(b.writable());
-		auto r = full_read(h.descriptor(), b.data(), n, off);
-		if (!r) { return r.exception(); }
-		return true;
 	}
+	else if (r == io_method::paging || r == io_method::direct) {
+		assert(b.writable());
+		auto s = full_read(h.descriptor(), b.data(), n, off);
+		if (!s) { return s.exception(); }
+	}
+	return true;
 }
 
 template <

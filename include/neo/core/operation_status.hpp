@@ -5,8 +5,8 @@
 ** Contact:   _@adityaramesh.com
 **
 ** The `operation_status` enum is used to summarize the changes that were
-** brought about by the previous IO transaction. These changes can be put into
-** three categories:
+** effected by the previous IO operation. These changes can be put into three
+** categories:
 **
 **   - Serialization/deserialization status: the `in_progress`, `success`, and
 **   `failure` flags are used to indicate the progress in serializing or

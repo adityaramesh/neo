@@ -40,8 +40,11 @@ template <class SerializedType>
 buffer_state make_buffer_state() noexcept
 {
 	static constexpr auto hdr_size = element_size<SerializedType>::value;
+	static constexpr auto elem_size = element_size<SerializedType>::value;
+
 	auto b = buffer_state{};
-	b.required_constraints().at_least(hdr_size);
+	b.required_constraints().at_least(std::max(hdr_size, elem_size));
+	b.preferred_constraints().at_least(std::max(hdr_size, elem_size));
 	return b;
 }
 
@@ -49,13 +52,17 @@ template <class SerializedType>
 class io_state : public array_state_base<io_state<SerializedType>, offset_type>
 {
 public:
-	using value_type = eigen_type<SerializedType>;
+	using value_type = mapped_eigen_type<SerializedType>;
 private:
 	static constexpr auto hdr_size  = header_size<SerializedType>::value;
 	static constexpr auto elem_size = element_size<SerializedType>::value;
 	static constexpr auto matrices  = count_matrices<SerializedType>::value;
 
-	value_type m_val{};
+	/*
+	** Part of a nasty hack to get around the fact that `Eigen::Map`s are
+	** not default constructible.
+	*/
+	std::array<uint8_t, sizeof(value_type)> m_buf;
 
 	/*
 	** Used to indicate whether the $i$th matrix in each element needs to be
@@ -82,7 +89,16 @@ public:
 		return *this;
 	}
 
-	DEFINE_REF_GETTER_SETTER(io_state, element, m_val)
+	/*
+	** Part of a nasty hack to get around the fact that `Eigen::Map`s are
+	** not default-constructible.
+	*/
+	value_type& element() noexcept
+	{ return *reinterpret_cast<value_type*>(m_buf.data()); }
+
+	const value_type& element() const noexcept
+	{ return *reinterpret_cast<const value_type*>(m_buf.data()); }
+
 	DEFINE_COPY_GETTER_SETTER(io_state, flip_integers, m_flip_ints)
 	DEFINE_COPY_GETTER_SETTER(io_state, flip_floats, m_flip_floats)
 };

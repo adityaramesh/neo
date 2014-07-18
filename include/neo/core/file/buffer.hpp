@@ -111,7 +111,7 @@ public:
 
 	size_t size() const
 	{
-		assert(m_off <= m_size);
+		assert(m_off <= (off_t)m_size);
 		return m_size - m_off;
 	}
 

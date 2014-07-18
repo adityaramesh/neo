@@ -12,8 +12,8 @@ incflags  = "-I include -isystem #{boost} -isystem #{ccbase} -isystem #{eigen} -
 ldflags   = ""
 
 if cxx.include? "clang"
-	optflags = "-Ofast -fno-fast-math -flto -DNDEBUG -DNEO_NO_DEBUG -ggdb"
-	#optflags = "-Ofast -ggdb -DNDEBUG -DNEO_NO_DEBUG"
+	optflags = "-Ofast -fno-fast-math -flto -ggdb"
+	#optflags = "-Ofast -fno-fast-math -flto -DNDEBUG -DNEO_NO_DEBUG -ggdb"
 elsif cxx.include? "g++"
 	optflags = "-Ofast -fno-fast-math -flto -fwhole-program"
 end

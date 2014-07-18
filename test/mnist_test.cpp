@@ -19,24 +19,25 @@ module("test read")
 
 	constexpr auto path = "data/mnist/train-images-idx3-ubyte";
 	auto strat = file::strategy<io_mode::input>{path};
-	strat.infer_defaults(access_mode::random);
+	strat.infer_defaults(access_mode::sequential);
 
 	auto h = file::open<open_mode::read>(path, strat).move();
-	auto buf = file::allocate_ibuffer(h, strat);
-
 	auto is = mnist::image_io_state{};
 	auto es = mnist::error_state{};
 	auto bs = mnist::make_image_buffer_state();
-	
-	file::read(h, 0, buf.size(), buf, strat);
+
+	auto bc = *merge_strong(
+		strat.preferred_constraints(io_mode::input),
+		bs.preferred_constraints()
+	);
+	auto buf = file::allocate_ibuffer(h, strat, bc);
+	file::read(h, 0, buf.size(), buf, strat).get();
+
 	auto s = mnist::read_header(buf.data(), buf.size(), is, bs, es);
 	require(!!(s & operation_status::success));
 
-	s = mnist::deserialize(
-		buf.data() + bs.consumed(),
-		buf.size() - bs.consumed(),
-		is, bs, es
-	);
+	file::read(h, bs.consumed(), buf.size(), buf, strat).get();
+	s = mnist::deserialize(buf.data(), buf.size(), is, bs, es);
 	require(!!(s & operation_status::success));
 
 	auto m = is.element();

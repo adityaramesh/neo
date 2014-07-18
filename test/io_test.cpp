@@ -26,10 +26,10 @@ module("test read")
 	auto h = file::open<open_mode::read>(path, s).move();
 	auto b = file::allocate_ibuffer(h, s);
 	
-	file::read(h, 0, 64, b, s);
+	file::read(h, 0, 64, b, s).get();
 	require(std::memcmp(b.data(), str1, 64) == 0);
 
-	file::read(h, s.current_file_size().get() - 64, 64, b, s);
+	file::read(h, s.current_file_size().get() - 64, 64, b, s).get();
 	require(std::memcmp(b.data(), str2, 64) == 0);
 }
 

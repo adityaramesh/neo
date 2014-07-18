@@ -97,7 +97,7 @@ public:
 		boost::optional<off_t> max_fs = boost::none
 	) noexcept : m_max_fs{max_fs}
 	{
-		if (m_max_fs) { assert(IOMode & io_mode::output); }
+		if (m_max_fs) { assert(!!(IOMode & io_mode::output)); }
 		update_with(path);
 	}
 
@@ -151,13 +151,13 @@ public:
 	{
 		switch (m) {
 		case io_mode::input:
-			assert(IOMode & io_mode::input);
+			assert(!!(IOMode & io_mode::input));
 			return m_ireq;
 		case io_mode::output:
-			assert(IOMode & io_mode::output);
+			assert(!!(IOMode & io_mode::output));
 			return m_oreq;
 		case io_mode::input | io_mode::output:
-			assert(IOMode == io_mode::input | io_mode::output);
+			assert(IOMode == (io_mode::input | io_mode::output));
 			return m_ioreq;
 		}
 	}
@@ -167,13 +167,13 @@ public:
 	{
 		switch (m) {
 		case io_mode::input:
-			assert(IOMode & io_mode::input);
+			assert(!!(IOMode & io_mode::input));
 			return m_ipref;
 		case io_mode::output:
-			assert(IOMode & io_mode::output);
+			assert(!!(IOMode & io_mode::output));
 			return m_opref;
 		case io_mode::input | io_mode::output:
-			assert(IOMode == io_mode::input | io_mode::output);
+			assert(IOMode == (io_mode::input | io_mode::output));
 			return m_iopref;
 		}
 	}
@@ -183,13 +183,13 @@ public:
 	{
 		switch (m) {
 		case io_mode::input:
-			assert(IOMode & io_mode::input);
+			assert(!!(IOMode & io_mode::input));
 			return m_ireq;
 		case io_mode::output:
-			assert(IOMode & io_mode::output);
+			assert(!!(IOMode & io_mode::output));
 			return m_oreq;
 		case io_mode::input | io_mode::output:
-			assert(IOMode == io_mode::input | io_mode::output);
+			assert(IOMode == (io_mode::input | io_mode::output));
 			return m_ioreq;
 		}
 	}
@@ -199,13 +199,13 @@ public:
 	{
 		switch (m) {
 		case io_mode::input:
-			assert(IOMode & io_mode::input);
+			assert(!!(IOMode & io_mode::input));
 			return m_ipref;
 		case io_mode::output:
-			assert(IOMode & io_mode::output);
+			assert(!!(IOMode & io_mode::output));
 			return m_opref;
 		case io_mode::input | io_mode::output:
-			assert(IOMode == io_mode::input | io_mode::output);
+			assert(IOMode == (io_mode::input | io_mode::output));
 			return m_iopref;
 		}
 	}
@@ -215,15 +215,15 @@ public:
 	{
 		switch (m) {
 		case io_mode::input:
-			assert(IOMode & io_mode::input);
+			assert(!!(IOMode & io_mode::input));
 			m_ireq = bc;
 			break;
 		case io_mode::output:
-			assert(IOMode & io_mode::output);
+			assert(!!(IOMode & io_mode::output));
 			m_oreq = bc;
 			break;
 		case io_mode::input | io_mode::output:
-			assert(IOMode == io_mode::input | io_mode::output);
+			assert(IOMode == (io_mode::input | io_mode::output));
 			m_ioreq = bc;
 			break;
 		}
@@ -235,15 +235,15 @@ public:
 	{
 		switch (m) {
 		case io_mode::input:
-			assert(IOMode & io_mode::input);
+			assert(!!(IOMode & io_mode::input));
 			m_ipref = bc;
 			break;
 		case io_mode::output:
-			assert(IOMode & io_mode::output);
+			assert(!!(IOMode & io_mode::output));
 			m_opref = bc;
 			break;
 		case io_mode::input | io_mode::output:
-			assert(IOMode == io_mode::input | io_mode::output);
+			assert(IOMode == (io_mode::input | io_mode::output));
 			m_iopref = bc;
 			break;
 		}
@@ -266,7 +266,7 @@ public:
 	strategy&
 	maximum_file_size(off_t fs)
 	{
-		assert(IOMode & io_mode::output);
+		assert(!!(IOMode & io_mode::output));
 		if (m_cur_fs) {
 			assert(fs >= m_cur_fs && "Maximum file size must be "
 				"greater than or equal to the current file "
@@ -280,7 +280,7 @@ public:
 	strategy&
 	read_method(io_method m)
 	{
-		assert(IOMode & io_mode::input);
+		assert(!!(IOMode & io_mode::input));
 		assert(m_cur_fs && "Reading requires known current file size.");
 		m_read_mtd = m;
 		return *this;
@@ -289,7 +289,7 @@ public:
 	strategy&
 	write_method(io_method m)
 	{
-		assert(IOMode & io_mode::output);
+		assert(!!(IOMode & io_mode::output));
 		if (m == io_method::mmap) {
 			assert(m_max_fs && "mmap requires known maximum file size.");
 			m_preallocate = true;
@@ -300,14 +300,14 @@ public:
 
 	strategy& read_ahead(bool b)
 	{
-		assert(IOMode & io_mode::input);
+		assert(!!(IOMode & io_mode::input));
 		m_rdahead = b;
 		return *this;
 	}
 
 	strategy& preallocate(bool b)
 	{
-		assert(IOMode & io_mode::output);
+		assert(!!(IOMode & io_mode::output));
 		assert(m_max_fs && "preallocate requires maximum file size.");
 		m_preallocate = b;
 		return *this;

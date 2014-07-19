@@ -142,9 +142,9 @@ noexcept
 	*/
 	#if PLATFORM_KERNEL == PLATFORM_KERNEL_LINUX
 		if (
-			(s.read_method() == io_method::direct &&
+			(!!(*s.read_method() & io_method::direct) &&
 			!!(IOMode & io_mode::input)) ||
-			(s.write_method() == io_method::direct &&
+			((*s.write_method() & io_method::direct) &&
 			!!(IOMode & io_mode::output))
 		) {
 			auto r = safe_open(path, flags | O_DIRECT);
@@ -166,7 +166,7 @@ noexcept
 	** Apply the IO optimizations to the handle.
 	*/
 	#if PLATFORM_KERNEL == PLATFORM_KERNEL_XNU
-		if (s.read_method() == io_method::direct) {
+		if (!!(*s.read_method() & io_method::direct)) {
 			auto r1 = safe_nocache(fd);
 			if (!r1) {
 				auto r2 = safe_close(fd);
@@ -216,10 +216,10 @@ noexcept
 		}
 	}
 
-	if (s.write_method() && s.write_method() == io_method::mmap) {
+	if (s.write_method() && !!(*s.write_method() & io_method::mmap)) {
 		return handle<IOMode>{fd, (size_t)*s.maximum_file_size()};
 	}
-	else if (s.read_method() && s.read_method() == io_method::mmap) {
+	else if (s.read_method() && !!(*s.read_method() & io_method::mmap)) {
 		return handle<IOMode>{fd, (size_t)*s.current_file_size()};
 	}
 	else {

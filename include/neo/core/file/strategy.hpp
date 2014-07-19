@@ -142,8 +142,8 @@ public:
 	bool supports_dual_use_buffers() const
 	{
 		return m_read_mtd && m_write_mtd &&
-		((m_read_mtd == io_method::mmap && m_write_mtd == io_method::mmap) ||
-		(m_read_mtd != io_method::mmap && m_write_mtd != io_method::mmap));
+		((!!(*m_read_mtd & io_method::mmap) && !!(*m_write_mtd & io_method::mmap)) ||
+		(!(*m_read_mtd & io_method::mmap) && !(*m_write_mtd & io_method::mmap)));
 	}
 
 	buffer_constraints&
@@ -290,7 +290,7 @@ public:
 	write_method(io_method m)
 	{
 		assert(!!(IOMode & io_mode::output));
-		if (m == io_method::mmap) {
+		if (!!(m & io_method::mmap)) {
 			assert(m_max_fs && "mmap requires known maximum file size.");
 			m_preallocate = true;
 		}
@@ -336,7 +336,7 @@ strategy<IOMode>& strategy<IOMode>::infer_defaults(access_mode m)
 		assert(m_blksize && "Block size required.");
 
 		if (m == access_mode::sequential) {
-			m_read_mtd = io_method::paging;
+			m_read_mtd = io_method::buffer | io_method::paging;
 			#if PLATFORM_KERNEL == PLATFORM_KERNEL_LINUX
 				m_rdahead = true;
 				m_ipref.at_least(40_KB)
@@ -356,7 +356,7 @@ strategy<IOMode>& strategy<IOMode>::infer_defaults(access_mode m)
 			#endif
 		}
 		else {
-			m_read_mtd = io_method::direct;
+			m_read_mtd = io_method::buffer | io_method::direct;
 			m_rdahead = false;
 			m_ireq.align_to(*m_blksize);
 			m_ipref.align_to(*m_blksize);
@@ -368,15 +368,15 @@ strategy<IOMode>& strategy<IOMode>::infer_defaults(access_mode m)
 		}
 		if (m == access_mode::sequential) {
 			#if PLATFORM_KERNEL == PLATFORM_KERNEL_LINUX
-				m_write_mtd = io_method::paging;
+				m_write_mtd = io_method::buffer | io_method::paging;
 				m_opref.at_least(4096_KB).align_to(*m_blksize);
 			#elif PLATFORM_KERNEL == PLATFORM_KERNEL_XNU
-				m_write_mtd = io_method::paging;
+				m_write_mtd = io_method::buffer | io_method::paging;
 				m_opref.at_least(1024_KB);
 			#endif
 		}
 		else {
-			m_write_mtd = io_method::direct;
+			m_write_mtd = io_method::buffer | io_method::direct;
 			m_oreq.align_to(*m_blksize);
 			m_opref.align_to(*m_blksize);
 		}
@@ -396,8 +396,8 @@ strategy<IOMode>& strategy<IOMode>::infer_defaults(access_mode m)
 
 		if (m == access_mode::sequential) {
 			m_rdahead = true;
-			m_read_mtd = io_method::paging;
-			m_write_mtd = io_method::paging;
+			m_read_mtd = io_method::buffer | io_method::paging;
+			m_write_mtd = io_method::buffer | io_method::paging;
 
 			m_ipref.align_to(*m_blksize);
 			m_opref.align_to(*m_blksize);
@@ -405,8 +405,8 @@ strategy<IOMode>& strategy<IOMode>::infer_defaults(access_mode m)
 		}
 		else {
 			m_rdahead = false;
-			m_read_mtd = io_method::direct;
-			m_write_mtd = io_method::direct;
+			m_read_mtd = io_method::buffer | io_method::direct;
+			m_write_mtd = io_method::buffer | io_method::direct;
 
 			m_ireq.align_to(*m_blksize);
 			m_oreq.align_to(*m_blksize);

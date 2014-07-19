@@ -41,6 +41,47 @@ module("test traits")
 	require(element_size<t4>::value == 111 * sizeof(double));
 }
 
+module("test serialization")
+{
+	namespace file = neo::file;
+	namespace archive = neo::archive;
+	using namespace neo;
+	using file::open_mode;
+	using archive::storage_order;
+
+	constexpr auto path = "data/archive/test.dsa";
+	auto strat = file::strategy<io_mode::output>{path};
+	strat.infer_defaults(access_mode::sequential);
+
+	using n1 = double;
+	using n2 = archive::vector<double, 37>;
+	using n3 = archive::matrix<double, 13, 37, storage_order::row_major>;
+	using n4 = archive::matrix<int16_t, 38, 53, storage_order::column_major>;
+	using n5 = archive::vector<int8_t, 4>;
+	using n6 = int32_t;
+	using e1 = archive::eigen_type<n1>;
+	using e2 = archive::eigen_type<n2>;
+	using e3 = archive::eigen_type<n3>;
+	using e4 = archive::eigen_type<n4>;
+	using e5 = archive::eigen_type<n5>;
+	using e6 = archive::eigen_type<n6>;
+	using input_type = std::tuple<n1, n2, n3, n4, n5, n6>;
+
+	auto h = file::open<open_mode::create_or_replace>(path, strat).move();
+	auto is = archive::io_state<input_type>{};
+	auto es = archive::error_state{};
+	auto bs = archive::make_buffer_state<input_type>();
+
+	auto bc = *merge_strong(
+		strat.preferred_constraints(io_mode::output),
+		bs.preferred_constraints()
+	);
+	auto buf = file::allocate_obuffer(h, strat, bc);
+	auto s = archive::write_header(buf.data(), buf.size(), is, bs, es);
+	require(!!(s & operation_status::success));
+}
+
+/*
 module("test deserialization")
 {
 	namespace file = neo::file;
@@ -107,5 +148,6 @@ module("test deserialization")
 		require(a5(i) == i);
 	}
 }
+*/
 
 suite("Tests the archive IO facilities.")

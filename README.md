@@ -58,17 +58,18 @@ errors.
 functions for useful primitive types.
 
 - Stage 3: archive support.
-    - **Note:** when deserializing, update the tuple stored within the io_state
-    instead of returning a value from the process_component function.
-    - How to deal with changing buffer offset and ensuring that constraints are
-    still met after each element in the buffer is processed?
-    - `archive/deserialize.hpp`.
-    - Test the above.
+    - Add `AccessMode` template parameter to `buffer_state`.
+    - Set the buffer constraints for MNIST and archive based on the access mode.
+    For sequential access patterns, make the buffer size at least the smallest
+    multiple of the element size that is larger than the header size. Also
+    require the buffer size to be a multiple of the element size.
+    - For random access patters, first set the required buffer size to max of
+    the header size and element size.
     - `archive/write_header.hpp`.
     - Test the above.
     - `archive/serialize.hpp`.
     - Test the above.
-    - `archive/io.hpp`.
+    - `archive/io.hpp` -- just include the other headers.
 
 - Stage 4: Flow graph support.
     - ...

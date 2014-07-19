@@ -9,6 +9,7 @@
 #define Z7C5C3505_051A_480E_B6EA_684915748EE8
 
 #include <cstdint>
+#include <neo/core/access_mode.hpp>
 #include <neo/core/basic_context.hpp>
 #include <neo/core/basic_log_record.hpp>
 #include <neo/core/basic_error_state.hpp>
@@ -28,17 +29,25 @@ using context = basic_context<with_element<offset_type>>;
 using log_record = basic_log_record<with_severity, with_context<context>, with_message>; 
 using error_state = basic_error_state<log_record>;
 
+template <access_mode AccessMode>
 buffer_state make_image_buffer_state() noexcept
 {
 	auto b = buffer_state{};
-	b.required_constraints().at_least(img_size);
-	b.preferred_constraints().at_least(img_size);
+	auto size = (AccessMode == access_mode::sequential) ?
+	size = image_io_state::hdr_size + img_size :
+	size = std::max(image_io_state::hdr_size, img_size);
+
+	b.required_constraints().at_least(size);
+	b.preferred_constraints().at_least(size);
 	return b;
 }
 
 buffer_state make_label_buffer_state() noexcept
 {
-	return buffer_state{};
+	auto b = buffer_state{};
+	b.required_constraints().at_least(label_io_state::hdr_size + 1);
+	b.preferred_constraints().at_least(label_io_state::hdr_size + 1);
+	return b;
 }
 
 class image_io_state : public array_state_base<image_io_state, offset_type>
@@ -47,8 +56,9 @@ public:
 	using value_type =
 	Eigen::Map<Eigen::Matrix<uint8_t, img_width, img_width,
 		Eigen::RowMajor, img_width, img_width>>;
-private:
+
 	static constexpr auto hdr_size = 16;
+private:
 	value_type m_ref{nullptr};
 public:
 	explicit image_io_state() noexcept {}

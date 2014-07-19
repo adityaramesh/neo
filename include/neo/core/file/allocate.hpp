@@ -34,7 +34,7 @@ allocate_ibuffer(
 	assert(s.read_method());
 	assert(bc.satisfies(s.required_constraints(io_mode::input)));
 
-	if (s.read_method() == io_method::mmap) {
+	if (!!(*s.read_method() & io_method::mmap)) {
 		return buffer<IOMode>{h.map(), (size_t)*s.current_file_size()};
 	}
 	else {
@@ -66,7 +66,7 @@ allocate_obuffer(
 	assert(s.write_method());
 	assert(bc.satisfies(s.required_constraints(io_mode::output)));
 
-	if (s.write_method() == io_method::mmap) {
+	if (!!(*s.write_method() == io_method::mmap)) {
 		return buffer<IOMode>{h.map(), (size_t)*s.maximum_file_size()};
 	}
 	else {
@@ -95,8 +95,8 @@ allocate_iobuffer(
 	assert(s.supports_dual_use_buffers());
 	assert(bc.satisfies(s.required_constraints(io_mode::input | io_mode::output)));
 
-	if (s.read_method() == io_method::mmap &&
-		s.write_method() == io_method::mmap)
+	if (!!(*s.read_method() & io_method::mmap) &&
+		!!(*s.write_method() & io_method::mmap))
 	{
 		return buffer_type{h.map(), (size_t)*s.maximum_file_size()};
 	}

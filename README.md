@@ -5,6 +5,31 @@
   ** Contact:   _@adityaramesh.com
 -->
 
+# Introduction
+
+`neo` is a C++ framework for high-performance, pipelined IO. It's geared towards
+streaming data to and from various binary and text-based file formats. The
+library is structured into the following three independent modules whose
+interaction is coordinated by the high-level programmer interface.
+
+  - The low-level IO interface. The purpose of this interface is threefold:
+    1. To provide a uniform interface to access the platform-specific system
+    calls used for IO.
+    2. To automatically apply the IO optimizations suggested by the results of
+    [this benchmark][io_benchmark], and allow the user to manually tune these
+    options.
+    3. To implement clean and robust error-checking using modern programming
+    idioms.
+  - The serialization and deserialization interface. This interface provides
+  efficient, stateless functions for various file formats to deserialize objects
+  from and serialize objects to byte buffers.
+  - The flow graph interface. This interface has the following purposes:
+    1. To allow the programmer to compose flow graphs to describe the
+    interaction between producer-consumer agents.
+    2. To coordinate the communication of data between agents in the flow graph.
+    3. To schedule the execution of the agents to make good use of available
+    system resources.
+
 # Future Ideas
 
 - Use the DSA file format to implement boosting for data sets that cannot fit in

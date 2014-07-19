@@ -28,7 +28,7 @@ interaction is coordinated by the high-level programmer interface.
     1. To allow the programmer to compose flow graphs to describe the
     interaction between producer-consumer agents.
     2. To coordinate the communication of data between agents in the flow graph.
-    3. To schedule the execution of the agents to make good use of available
+    3. To schedule the execution of the agents to maximize usage of available
     system resources.
 
 # Future Ideas

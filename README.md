@@ -12,9 +12,10 @@ streaming data to and from various binary and text-based file formats. The
 library is structured into the following three independent modules whose
 interaction is coordinated by the high-level programmer interface.
 
-  - The low-level IO interface. The purpose of this interface is threefold:
+  - The IO interface. The purpose of this interface is threefold:
     1. To provide a uniform interface to access the platform-specific system
-    calls used for IO.
+    calls used to read data from files into byte buffers, and to write data from
+    byte buffers to files.
     2. To automatically apply the IO optimizations suggested by the results of
     [this benchmark][io_benchmark], and allow the user to manually tune these
     options.
@@ -22,7 +23,7 @@ interaction is coordinated by the high-level programmer interface.
     idioms.
   - The serialization and deserialization interface. This interface provides
   efficient, stateless functions for various file formats to deserialize objects
-  from and serialize objects to byte buffers.
+  from byte buffers and serialize objects to byte buffers.
   - The flow graph interface. This interface has the following purposes:
     1. To allow the programmer to compose flow graphs to describe the
     interaction between producer-consumer agents.

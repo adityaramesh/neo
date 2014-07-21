@@ -11,5 +11,6 @@
 #include <neo/io/archive/read_header.hpp>
 #include <neo/io/archive/deserialize.hpp>
 #include <neo/io/archive/write_header.hpp>
+#include <neo/io/archive/serialize.hpp>
 
 #endif

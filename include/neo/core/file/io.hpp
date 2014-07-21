@@ -74,7 +74,7 @@ write(
 	assert(n > 0);
 
 	if (s.maximum_file_size()) {
-		assert(off + n <= s.maximum_file_size());
+		assert((off_t)(off + n) <= s.maximum_file_size());
 	}
 
 	switch (*s.write_method()) {
@@ -87,14 +87,15 @@ write(
 			assert(b.readable());
 			std::copy_n(b.data(), n, h.map() + off);
 		}
-		return true;
+		break;
 	case io_method::paging:
 	case io_method::direct:
 		assert(b.readable());
 		auto r = full_write(h.descriptor(), b.data(), n, off);
 		if (!r) { return r.exception(); }
-		return true;
+		break;
 	}
+	return true;
 }
 
 }}

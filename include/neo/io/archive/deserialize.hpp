@@ -239,7 +239,6 @@ deserialize(
 ) noexcept
 {
 	(void)n;
-	cc::println("$ $", is.element_size(), n);
 	assert(n >= is.element_size());
 	bs.consumed(is.element_size());
 

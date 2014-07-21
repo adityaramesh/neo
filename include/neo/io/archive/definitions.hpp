@@ -16,7 +16,6 @@
 #include <neo/io/archive/byte_order.hpp>
 #include <neo/io/archive/eigen_traits.hpp>
 #include <neo/io/archive/size_traits.hpp>
-#include <neo/utility/array_state_base.hpp>
 #include <ccbase/utility.hpp>
 
 namespace neo {
@@ -41,15 +40,17 @@ buffer_state make_buffer_state() noexcept
 {
 	static constexpr auto hdr_size = element_size<SerializedType>::value;
 	static constexpr auto elem_size = element_size<SerializedType>::value;
+	static constexpr auto min_size = (hdr_size % elem_size == 0) ?
+	hdr_size : hdr_size + elem_size - hdr_size % elem_size;
 
 	auto b = buffer_state{};
-	b.required_constraints().at_least(std::max(hdr_size, elem_size));
-	b.preferred_constraints().at_least(std::max(hdr_size, elem_size));
+	b.required_constraints().at_least(min_size);
+	b.preferred_constraints().at_least(min_size).multiple_of(elem_size);
 	return b;
 }
 
 template <class SerializedType>
-class io_state : public array_state_base<io_state<SerializedType>, offset_type>
+class io_state
 {
 public:
 	using value_type = mapped_eigen_type<SerializedType>;
@@ -63,6 +64,7 @@ private:
 	** not default constructible.
 	*/
 	std::array<uint8_t, sizeof(value_type)> m_buf;
+	boost::optional<offset_type> m_elem_count{};
 
 	/*
 	** Used to indicate whether the $i$th matrix in each element needs to be
@@ -101,6 +103,18 @@ public:
 
 	DEFINE_COPY_GETTER_SETTER(io_state, flip_integers, m_flip_ints)
 	DEFINE_COPY_GETTER_SETTER(io_state, flip_floats, m_flip_floats)
+
+	offset_type element_count() const
+	{
+		assert(m_elem_count && "Element count uninitialized.");
+		return *m_elem_count;
+	}
+
+	io_state& element_count(offset_type n)
+	{
+		m_elem_count = n;
+		return *this;
+	}
 };
 
 }}

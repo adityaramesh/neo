@@ -79,6 +79,40 @@ module("test serialization")
 	auto buf = file::allocate_obuffer(h, strat, bc);
 	auto s = archive::write_header(buf.data(), buf.size(), is, bs, es);
 	require(!!(s & operation_status::success));
+	file::write(h, 0, is.header_size(), buf, strat).get();
+
+	auto a1 = e1{1.0};
+	auto a2 = e2{};
+	auto a3 = e3{};
+	auto a4 = e4{};
+	auto a5 = e5{};
+	auto a6 = e6{-1};
+
+	for (auto i = 0; i != a2.size(); ++i) {
+		a2(i) = i;
+	}
+	for (auto i = 0; i != a3.rows(); ++i) {
+		for (auto j = 0; j != a3.cols(); ++j) {
+			a3(i, j) = a3.cols() * i + j;
+		}
+	}
+	for (auto j = 0; j != a4.cols(); ++j) {
+		for (auto i = 0; i != a4.rows(); ++i) {
+			a4(i, j) = a4.cols() * i + j;
+		}
+	}
+	for (auto i = 0; i != a5.size(); ++i) {
+		a5(i) = i;
+	}
+	auto t = std::make_tuple(a1, a2, a3, a4, a5, a6);
+
+	s = archive::serialize(t, buf.data(), buf.size(), is, bs, es);
+	require(!!(s & operation_status::success));
+	file::write(h, is.header_size(), bs.consumed(), buf, strat).get();
+	file::write(h, is.header_size() + is.element_size(), bs.consumed(), buf,
+		strat).get();
+	file::write(h, is.header_size() + 2 * is.element_size(), bs.consumed(),
+		buf, strat).get();
 }
 
 /*

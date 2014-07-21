@@ -95,6 +95,12 @@ public:
 	decltype(m_buf) data() const { return m_buf + m_off; }
 	bool readable() const { return m_src != mmap_write_only; }
 	bool writable() const { return m_src != mmap_read_only; }
+
+	const uint8_t* map() const
+	{
+		assert(mapped());
+		return m_buf;
+	}
 	
 	uint8_t* map()
 	{

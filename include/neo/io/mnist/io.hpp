@@ -106,7 +106,7 @@ deserialize(
 	using value_type = image_io_state::value_type;
 	assert(n >= is.element_size());
 
-	new (&is.element()) value_type{buf};
+	::new (&is.element()) value_type{buf};
 	bs.consumed(is.element_size());
 	return operation_status::success;
 }

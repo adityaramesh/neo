@@ -12,7 +12,7 @@ incflags  = "-I include -isystem #{boost} -isystem #{ccbase} -isystem #{eigen} -
 ldflags   = ""
 
 if cxx.include? "clang"
-	optflags = "-Ofast -fno-fast-math -flto -ggdb"
+	optflags = "-O2 -fno-fast-math -flto -ggdb"
 	#optflags = "-Ofast -fno-fast-math -flto -DNDEBUG -DNEO_NO_DEBUG -ggdb"
 elsif cxx.include? "g++"
 	optflags = "-Ofast -fno-fast-math -flto -fwhole-program"
@@ -21,7 +21,7 @@ end
 cxxflags = "#{langflags} #{wflags} #{archflags} #{incflags} #{optflags}"
 tests    = FileList["test/*.cpp"].map{|f| f.sub("test", "out").ext("run")}
 
-task :default => ["out"] + tests
+multitask :default => ["out"] + tests
 
 directory "out"
 

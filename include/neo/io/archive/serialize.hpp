@@ -228,7 +228,7 @@ serialize(
 {
 	(void)n;
 	assert(n >= is.element_size());
-	bs.consumed(is.header_size());
+	bs.consumed(is.element_size());
 	detail::write_element<T, SerializedType>::apply(t, buf);
 	return operation_status::success;
 }

@@ -99,8 +99,18 @@ write_header(
 {
 	(void)n;
 	assert(n >= is.element_size());
-	bs.consumed(is.header_size());
 	detail::write_header<SerializedType>::apply(buf);
+
+	static constexpr auto elem_count_size = 8;
+
+	if (is.element_count()) {
+		*reinterpret_cast<uint64_t*>(buf + is.header_size() - elem_count_size) =
+			is.element_count();
+		bs.consumed(is.header_size());
+	}
+	else {
+		bs.consumed(is.header_size() - elem_count_size);
+	}
 	return operation_status::success;
 }
 

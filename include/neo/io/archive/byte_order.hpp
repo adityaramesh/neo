@@ -9,7 +9,7 @@
 #define Z01B1173D_9745_4F1D_B91C_E915545BE08C
 
 #include <ccbase/platform.hpp>
-#include <neo/utility/bitmask_enum.hpp>
+#include <neo/utility/enum_bitmask.hpp>
 
 namespace neo {
 namespace archive {

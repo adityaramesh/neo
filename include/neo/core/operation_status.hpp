@@ -26,7 +26,7 @@
 #ifndef ZA8E5AEB9_8701_4C48_8EA4_DB2078AB3558
 #define ZA8E5AEB9_8701_4C48_8EA4_DB2078AB3558
 
-#include <neo/utility/bitmask_enum.hpp>
+#include <neo/utility/enum_bitmask.hpp>
 
 namespace neo {
 

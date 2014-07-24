@@ -31,38 +31,37 @@
 namespace neo {
 
 template <class... Mixins>
-class basic_log_record : public unary_mixin_base<
+class basic_log_record : public mixin_base<
 	basic_log_record<Mixins...>, Mixins...
 >
 {
 	using base =
-	unary_mixin_base<basic_log_record<Mixins...>, Mixins...>;
+	mixin_base<basic_log_record<Mixins...>, Mixins...>;
 
 	friend class mixin_core_access;
-	constexpr static auto name = "log record";
 public:
 	explicit basic_log_record() noexcept {}
 
 	template <class... Args>
 	explicit basic_log_record(Args&&... args) :
 	base{std::forward<Args>(args)...} {}
-};
 
-template <class... Mixins>
-constexpr const char* basic_log_record<Mixins...>::name;
+	static constexpr const char* name() { return "log record"; }
+};
 
 class with_message
 {
 	std::string m_msg{};
 
 	friend class mixin_core_access;
-	constexpr static auto name = "message";
 public:
 	explicit with_message() noexcept {}
 
 	template <class T>
 	explicit with_message(T&& msg) noexcept
 	: m_msg{std::forward<T>(msg)} {}
+
+	static constexpr const char* name() { return "message"; }
 
 	DEFINE_REF_GETTER_SETTER(with_message, message, m_msg)
 };
@@ -75,12 +74,13 @@ class with_severity
 	severity m_sev{};
 
 	friend class mixin_core_access;
-	constexpr static auto name = "severity";
 public:
 	explicit with_severity() noexcept {}
 	
 	explicit with_severity(severity sev) noexcept
 	: m_sev{sev} {}
+
+	static constexpr const char* name() { return "severity"; }
 
 	DEFINE_COPY_GETTER_SETTER(with_severity, severity, m_sev)
 };
@@ -94,12 +94,13 @@ class with_code
 	Code m_code;
 
 	friend class mixin_core_access;
-	constexpr static auto name = "code";
 public:
 	explicit with_code() noexcept {}
 
 	explicit with_code(Code code) noexcept
 	: m_code{code} {}
+
+	static constexpr const char* name() { return "code"; }
 
 	DEFINE_COPY_GETTER_SETTER(with_code, code, m_code)
 };
@@ -114,13 +115,14 @@ class with_context
 	Context m_ctx;
 
 	friend class mixin_core_access;
-	constexpr static auto name = "context";
 public:
 	explicit with_context() noexcept {}
 
 	template <class T>
 	explicit with_context(T&& ctx) noexcept
 	: m_ctx{std::forward<T>(ctx)} {}
+
+	static constexpr const char* name() { return "context"; }
 
 	DEFINE_REF_GETTER_SETTER(with_context, context, m_ctx)
 };

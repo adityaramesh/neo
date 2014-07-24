@@ -10,15 +10,12 @@
 ** following:
 **
 **   - Required features of the IO buffer.
-**   - Optional features that may accelerate processing.
+**   - Optional features that may accelerate IO.
 **
-** If each agent in an IO pipeline is to use the same buffer processed by the
-** previous agent, then we must be able to satisfy the constraints on the IO
-** buffer imposed by all agents in the pipeline. Otherwise, we must copy data
-** between buffers partway through the pipeline.
-**
-** The `buffer_constraints` is useful because of the following key operations
-** that it allows us to perform:
+** If an agent in an IO pipeline is to use the same buffer as the one before it,
+** then we must be able to satisfy the constraints imposed by both. If this is
+** not possbile, we are forced to copy the data. To this end, the
+** `buffer_constraints` class supports the following operations:
 **
 **   - `merge_strong`: merge the two `buffer_constraints` objects into a single
 **   object that satisfies both sets of constraints. This may not always be
@@ -42,6 +39,7 @@
 #include <ccbase/format.hpp>
 
 namespace neo {
+namespace detail {
 
 /*
 ** Checks to ensure that the constraints are consistent, i.e. a feasible
@@ -98,6 +96,8 @@ bool is_consistent(
 	return true;
 }
 
+}
+
 class buffer_constraints
 {
 	boost::optional<size_t> m_at_least{};
@@ -112,7 +112,10 @@ public:
 		boost::optional<size_t> align_to    = boost::none
 	) noexcept : m_at_least{at_least}, m_at_most{at_most},
 	m_multiple_of{multiple_of}, m_align_to{align_to}
-	{ assert(is_consistent(m_at_least, m_at_most, m_multiple_of, m_align_to)); }
+	{
+		assert(detail::is_consistent(m_at_least, m_at_most,
+			m_multiple_of, m_align_to));
+	}
 
 	decltype(m_at_least)    at_least()    const { return m_at_least;    }
 	decltype(m_at_most)     at_most()     const { return m_at_most;     }
@@ -128,28 +131,28 @@ public:
 	buffer_constraints& at_least(boost::optional<size_t> n)
 	{
 		m_at_least = n;
-		assert(is_consistent(m_at_least, m_at_most, m_multiple_of, m_align_to));
+		assert(detail::is_consistent(m_at_least, m_at_most, m_multiple_of, m_align_to));
 		return *this;
 	}
 
 	buffer_constraints& at_most(boost::optional<size_t> n)
 	{
 		m_at_most = n;
-		assert(is_consistent(m_at_least, m_at_most, m_multiple_of, m_align_to));
+		assert(detail::is_consistent(m_at_least, m_at_most, m_multiple_of, m_align_to));
 		return *this;
 	}
 
 	buffer_constraints& multiple_of(boost::optional<size_t> n)
 	{
 		m_multiple_of = n;
-		assert(is_consistent(m_at_least, m_at_most, m_multiple_of, m_align_to));
+		assert(detail::is_consistent(m_at_least, m_at_most, m_multiple_of, m_align_to));
 		return *this;
 	}
 
 	buffer_constraints& align_to(boost::optional<size_t> n)
 	{
 		m_align_to = n;
-		assert(is_consistent(m_at_least, m_at_most, m_multiple_of, m_align_to));
+		assert(detail::is_consistent(m_at_least, m_at_most, m_multiple_of, m_align_to));
 		return *this;
 	}
 
@@ -370,7 +373,7 @@ merge_strong(const buffer_constraints& x, const buffer_constraints& y)
 		align_to = y.align_to();
 	}
 
-	if (!is_consistent(at_least, at_most, multiple_of, align_to)) {
+	if (!detail::is_consistent(at_least, at_most, multiple_of, align_to)) {
 		return boost::none;
 	}
 	return buffer_constraints{at_least, at_most, multiple_of, align_to};

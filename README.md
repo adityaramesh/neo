@@ -47,6 +47,9 @@ interface has no tangible benefits.
 - **Note:** it is the responsibility of the IO agent to deal with premature EOF
 errors.
 
+- Use some kind of SPSC/SPMC queue for `basic_error_state` in case concurrent
+access is desired.
+
 - MNIST demo based on LeNet-5.
 - MNIST demo with more of the latest NN techniques, e.g.:
     - Linear threshold functions.

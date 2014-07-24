@@ -3,6 +3,10 @@
 ** Author:    Aditya Ramesh
 ** Date:      07/14/2014
 ** Contact:   _@adityaramesh.com
+**
+** This class is responsible for maintaining the log records produced by the
+** thread performing the IO. While `pop_record()` is concurrency-safe,
+** `push_record` is not.
 */
 
 #ifndef ZEF4C5231_1876_4C70_A554_ADA3CB8EA942
@@ -19,9 +23,9 @@ template <class Record>
 class basic_error_state
 {
 	using record_list = std::vector<Record>;
-	using size_type = typename record_list::size_type;
-	using iterator = typename record_list::const_iterator;
-	using range = boost::iterator_range<iterator>;
+	using size_type   = typename record_list::size_type;
+	using iterator    = typename record_list::const_iterator;
+	using range       = boost::iterator_range<iterator>;
 
 	std::array<size_t, 5> m_rec_counts{};
 	record_list m_records{};

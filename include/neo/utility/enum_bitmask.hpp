@@ -1,5 +1,5 @@
 /*
-** File Name: bitmask_enum.hpp
+** File Name: enum_bitmask.hpp
 ** Author:    Aditya Ramesh
 ** Date:      12/06/2013
 ** Contact:   _@adityaramesh.com

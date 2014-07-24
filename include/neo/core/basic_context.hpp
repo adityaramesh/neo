@@ -13,25 +13,23 @@
 namespace neo {
 
 template <class... Mixins>
-class basic_context : public unary_mixin_base<
+class basic_context : public mixin_base<
 	basic_context<Mixins...>, Mixins...
 >
 {
 	using base =
-	unary_mixin_base<basic_context<Mixins...>, Mixins...>;
+	mixin_base<basic_context<Mixins...>, Mixins...>;
 
 	friend class mixin_core_access;
-	constexpr static auto name = "Context";
 public:
 	explicit basic_context() noexcept {}
 
 	template <class... Args>
 	explicit basic_context(Args&&... args) :
 	base{std::forward<Args>(args)...} {}
-};
 
-template <class... Mixins>
-constexpr const char* basic_context<Mixins...>::name;
+	static constexpr const char* name() { return "Context"; }
+};
 
 template <class SizeType>
 class with_line
@@ -39,12 +37,13 @@ class with_line
 	SizeType m_line;
 
 	friend class mixin_core_access;
-	constexpr static auto name = "line";
 public:
 	explicit with_line() noexcept {}
 
 	explicit with_line(SizeType line) noexcept
 	: m_line{line} {}
+
+	static constexpr const char* name() { return "line"; }
 
 	DEFINE_COPY_GETTER_SETTER(with_line, line, m_line)
 };
@@ -59,12 +58,13 @@ class with_column
 	SizeType m_col;
 
 	friend class mixin_core_access;
-	constexpr static auto name = "column";
 public:
 	explicit with_column() noexcept {}
 
 	explicit with_column(SizeType column) noexcept
 	: m_col{column} {}
+
+	static constexpr const char* name() { return "column"; }
 
 	DEFINE_COPY_GETTER_SETTER(with_column, column, m_col)
 };
@@ -79,12 +79,13 @@ class with_element
 	SizeType m_elem;
 
 	friend class mixin_core_access;
-	constexpr static auto name = "element";
 public:
 	explicit with_element() noexcept {}
 
 	explicit with_element(SizeType element) noexcept
 	: m_elem{element} {}
+
+	static constexpr const char* name() { return "element"; }
 
 	DEFINE_COPY_GETTER_SETTER(with_element, element, m_elem)
 };
@@ -99,12 +100,13 @@ class with_component
 	SizeType m_comp;
 
 	friend class mixin_core_access;
-	constexpr static auto name = "component";
 public:
 	explicit with_component() noexcept {}
 
 	explicit with_component(SizeType component) noexcept
 	: m_comp{component} {}
+
+	static constexpr const char* name() { return "component"; }
 
 	DEFINE_COPY_GETTER_SETTER(with_component, component, m_comp)
 };
@@ -118,12 +120,13 @@ class with_offset
 	off_t m_off;
 
 	friend class mixin_core_access;
-	constexpr static auto name = "offset";
 public:
 	explicit with_offset() noexcept {}
 
 	explicit with_offset(off_t offset) noexcept
 	: m_off{offset} {}
+
+	static constexpr const char* name() { return "offset"; }
 
 	DEFINE_COPY_GETTER_SETTER(with_offset, offset, m_off)
 };

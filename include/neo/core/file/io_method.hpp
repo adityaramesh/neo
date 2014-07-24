@@ -11,7 +11,7 @@
 #include <cassert>
 #include <ostream>
 #include <ccbase/format.hpp>
-#include <neo/utility/bitmask_enum.hpp>
+#include <neo/utility/enum_bitmask.hpp>
 
 namespace neo {
 

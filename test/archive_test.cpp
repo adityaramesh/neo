@@ -107,7 +107,7 @@ module("test serialization")
 	}
 	auto t = std::make_tuple(a1, a2, a3, a4, a5, a6);
 
-	s = archive::serialize(t, buf.data(), buf.size(), is, bs, es);
+	s = archive::format(t, buf.data(), buf.size(), is, bs, es);
 	require(!!(s & operation_status::success));
 	file::write(h, is.header_size(), bs.consumed(), buf, strat).get();
 	file::write(h, is.header_size() + is.element_size(), bs.consumed(), buf,
@@ -153,7 +153,7 @@ module("test row-major deserialization")
 	require(is.element_count() == 3);
 
 	file::read(h, bs.consumed(), buf.size(), buf, strat).get();
-	s = archive::deserialize(buf.data(), buf.size(), is, bs, es);
+	s = archive::scan(buf.data(), buf.size(), is, bs, es);
 	require(!!(s & operation_status::success));
 
 	auto t = is.element();
@@ -220,7 +220,7 @@ module("test column-major deserialization")
 	require(is.element_count() == 3);
 
 	file::read(h, bs.consumed(), buf.size(), buf, strat).get();
-	s = archive::deserialize(buf.data(), buf.size(), is, bs, es);
+	s = archive::scan(buf.data(), buf.size(), is, bs, es);
 	require(!!(s & operation_status::success));
 
 	auto t = is.element();

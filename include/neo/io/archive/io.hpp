@@ -9,8 +9,8 @@
 #define ZF9FCDF67_0EAB_4D8C_9952_DFE380A00205
 
 #include <neo/io/archive/read_header.hpp>
-#include <neo/io/archive/deserialize.hpp>
+#include <neo/io/archive/scan.hpp>
 #include <neo/io/archive/write_header.hpp>
-#include <neo/io/archive/serialize.hpp>
+#include <neo/io/archive/format.hpp>
 
 #endif

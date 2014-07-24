@@ -1,5 +1,5 @@
 /*
-** File Name: serialize.hpp
+** File Name: format.hpp
 ** Author:    Aditya Ramesh
 ** Date:      07/19/2014
 ** Contact:   _@adityaramesh.com
@@ -220,7 +220,7 @@ struct write_element<std::tuple<Ts...>, OutputType>
 
 template <class T, class SerializedType>
 operation_status
-serialize(
+format(
 	const T& t, uint8_t* buf, size_t n,
 	io_state<SerializedType>& is,
 	buffer_state& bs, error_state&

@@ -37,7 +37,7 @@ module("test read")
 	require(!!(s & operation_status::success));
 
 	file::read(h, bs.consumed(), buf.size(), buf, strat).get();
-	s = mnist::deserialize(buf.data(), buf.size(), is, bs, es);
+	s = mnist::scan(buf.data(), buf.size(), is, bs, es);
 	require(!!(s & operation_status::success));
 
 	auto m = is.element();

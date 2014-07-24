@@ -97,7 +97,7 @@ read_header(
 }
 
 operation_status
-deserialize(
+scan(
 	uint8_t* buf, size_t n,
 	image_io_state& is, buffer_state& bs, error_state&
 ) noexcept
@@ -112,7 +112,7 @@ deserialize(
 }
 
 operation_status
-deserialize(
+scan(
 	uint8_t* buf, size_t n,
 	label_io_state& ls, buffer_state& bs, error_state&
 ) noexcept

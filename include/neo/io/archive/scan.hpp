@@ -1,5 +1,5 @@
 /*
-** File Name: deserialize.hpp
+** File Name: scan.hpp
 ** Author:    Aditya Ramesh
 ** Date:      07/17/2014
 ** Contact:   _@adityaramesh.com
@@ -232,7 +232,7 @@ struct process_element<std::tuple<Ts...>, Matrices>
 
 template <class SerializedType>
 operation_status
-deserialize(
+scan(
 	uint8_t* buf, size_t n,
 	io_state<SerializedType>& is,
 	buffer_state& bs, error_state& es

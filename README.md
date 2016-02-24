@@ -40,6 +40,8 @@ performing the IO, then we need to replace `vector` with a SPSC/SPMC queue.
 
 # TODO
 
+- Remove excessive use of `expected<T>` and throw the exceptions instead.
+
 - Note about concepts: do not implement Device, Serializer, or Deserializer. The
 cost of using CRTP everywhere to force the relevant classes to obey the
 interface has no tangible benefits.
@@ -49,16 +51,3 @@ errors.
 
 - Use some kind of SPSC/SPMC queue for `basic_error_state` in case concurrent
 access is desired.
-
-- MNIST demo based on LeNet-5.
-- MNIST demo with more of the latest NN techniques, e.g.:
-    - Linear threshold functions.
-    - DropOut, MaxOut, etc.
-    - Nesterov momentum.
-    - Local response normalization.
-    - Local contrast normalization.
-    - Pooling (average, maximum), including overlapping pooling regions.
-- MNIST demo with affine distortions.
-- CIFAR demo.
-- FFmpeg support.
-- Support for replicating network efficiently.
